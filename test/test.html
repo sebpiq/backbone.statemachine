@@ -12,7 +12,7 @@
     <script>
         $(document).ready(function(){
 
-            module("Backbone state machine");
+            module("StateMachine");
 
             var stateMachine = {};
             _.extend(stateMachine, Backbone.StateMachine, Backbone.Events, {
@@ -132,6 +132,42 @@
                 deepEqual(stateMachine.called, [["doShake", "idle"]]);
                 equal(stateMachine.strength, "gently");
             });
+
+            module("StatefulView");
+            
+            var TestStatefulView = Backbone.StatefulView.extend({
+                transitions: {
+                    "hidden": {
+                        "show": {toState: "visible"}
+                    },
+                    "visible": {
+                        "hide": {toState: "hidden", className: "hiddenBehindTree"}
+                    },
+                },
+                testSetUp: function(state) {
+                    this.state = state;
+                }
+            });
+            var el = $("<div>");
+            var statefulView = new TestStatefulView({
+                state: "hidden",
+                el: el,
+            });
+
+            test("StatefulView - transition css class auto", function () {
+                statefulView.testSetUp("hidden");
+                equal(statefulView.receive("show"), true);
+                equal(statefulView.state, "visible");
+                equal(statefulView.el.attr("class"), "visible");
+            });
+
+            test("StatefulView - transition css class provided", function () {
+                statefulView.testSetUp("visible");
+                equal(statefulView.receive("hide"), true);
+                equal(statefulView.state, "hidden");
+                equal(statefulView.el.attr("class"), "hiddenBehindTree");
+            });
+
         });
     </script>
 

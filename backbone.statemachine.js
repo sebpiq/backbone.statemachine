@@ -104,7 +104,40 @@ Backbone.StateMachine = (function(Backbone, _){
         },
     };
 
+    StateMachine.version = "0.1.0";
+
     return StateMachine;
 
+})(Backbone, _);
+
+
+Backbone.StatefulView = (function(Backbone, _){
+
+    var StatefulView = function(options) {
+        Backbone.View.prototype.constructor.apply(this, arguments);
+        this.startStateMachine(options);
+        options.state && (this.state = options.state);
+    };
+
+    _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
+
+        stateClassName : undefined,
+
+        _doTransition : function(handler, event, silent) {
+            var fromState = this.state;
+            var triggered = Backbone.StateMachine._doTransition.apply(this, arguments);
+            if (triggered && (this.el)) {
+                $(this.el).removeClass(this.stateClassName);
+                this.stateClassName = (handler.className || this.state);
+                $(this.el).addClass(this.stateClassName);
+            }
+            return triggered;
+        },
+    });
+
+    // Set up inheritance for StatefulView.
+    StatefulView.extend = Backbone.View.extend;
+
+    return StatefulView;
 })(Backbone, _);
 
