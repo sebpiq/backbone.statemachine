@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <script src="jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="qunit.js"></script>
+    <script type="text/javascript" src="underscore-1.2.0.min.js"></script>
+    <script type="text/javascript" src="backbone-0.5.3.js"></script>
+    <script type="text/javascript" src="../backbone.statemachine.js"></script>
+    <link rel="stylesheet" href="qunit.css" type="text/css" media="screen" />
+
+    <script>
+        $(document).ready(function(){
+
+            module("Backbone state machine");
+
+            var stateMachine = {};
+            _.extend(stateMachine, Backbone.StateMachine, Backbone.Events, {
+                transitions: {
+                    "idle": {
+                        "shake": {toState: "shaking", leaveCb: ["doShake"]},
+                        "hide": {toState: "hidden", leaveCb: ["doHide"]}
+                    },
+                    "shaking": {
+                        "stop": {toState: "idle", leaveCb: ["stopShake"]},
+                        "hide": {toState: "hidden", leaveCb: ["stopShake", "doHide"]},
+                    },
+                    "hidden": {
+                        "shake": {toState: "shaking", leaveCb: ["doShow"], enterCb: ["doShake"]},
+                        "show": {toState: "idle", leaveCb: ["doShow"]}
+                    }
+                },
+                doShake: function(event, strength){
+                    this.called.push(["doShake", this.state]);
+                    this.strength = strength;
+                },
+                doHide: function(event){
+                    this.called.push(["doHide", this.state]);
+                },
+                stopShake: function(){
+                    this.called.push(["stopShake", this.state]);
+                },
+                doShow: function(){
+                    this.called.push(["doShow", this.state]);
+                },
+                testSetUp: function(state) {
+                    this.called = [];
+                    this.strength = undefined;
+                    this.state = state;
+                }
+            });
+
+            stateMachine.startStateMachine({state: "hidden"});
+
+            test("StateMachine - simple transition", function () {
+                stateMachine.testSetUp("hidden");
+                equal(stateMachine.receive("show"), true);
+                equal(stateMachine.state, "idle");
+                deepEqual(stateMachine.called, [["doShow", "hidden"]]);
+            });
+
+            test("StateMachine - transition with extra arguments", function () {
+                stateMachine.testSetUp("idle");
+                equal(stateMachine.receive("shake", "like crazy"), true);
+                equal(stateMachine.state, "shaking");
+                deepEqual(stateMachine.called, [["doShake", "idle"]]);
+                equal(stateMachine.strength, "like crazy");
+            });
+
+            test("StateMachine - transition with 2 callbacks", function () {
+                stateMachine.testSetUp("shaking");
+                equal(stateMachine.receive("hide"), true);
+                equal(stateMachine.state, "hidden");
+                deepEqual(stateMachine.called, [["stopShake", "shaking"], ["doHide", "shaking"]]);
+            });
+
+            test("StateMachine - transition with enter callback and leave callback", function () {
+                stateMachine.testSetUp("hidden");
+                equal(stateMachine.receive("shake"), true);
+                equal(stateMachine.state, "shaking");
+                deepEqual(stateMachine.called, [["doShow", "hidden"], ["doShake", "shaking"]]);
+            });
+
+            test("StateMachine - no transition", function () {
+                stateMachine.testSetUp("hidden");
+                equal(stateMachine.receive("bla"), false);
+                equal(stateMachine.state, "hidden");
+                deepEqual(stateMachine.called, []);
+            });
+
+            test("StateMachine - events triggered when transition", function () {
+                stateMachine.testSetUp("hidden");
+                var received = [];
+                stateMachine.bind("leaveState:hidden", function () {
+                    received.push(["leaveState:hidden"].concat(_.toArray(arguments)));
+                });
+                stateMachine.bind("transition", function () {
+                    received.push(["transition"].concat(_.toArray(arguments)));
+                });
+                stateMachine.bind("enterState:idle", function () {
+                    received.push(["enterState:idle"].concat(_.toArray(arguments)));
+                });
+                equal(stateMachine.receive("show", "bla"), true);
+                equal(stateMachine.state, "idle");
+                deepEqual(received, [
+                    ["leaveState:hidden", "bla"],
+                    ["transition", "hidden", "show", "idle"],
+                    ["enterState:idle", "bla"]
+                ]);
+            });
+
+            test("StateMachine - receiveInSilence", function () {
+                stateMachine.testSetUp("hidden");
+                var received = [];
+                stateMachine.bind("all", function (event) {
+                    received.push(event);
+                });
+                equal(stateMachine.receiveInSilence("show", "bla"), true);
+                equal(stateMachine.state, "idle");
+                deepEqual(received, []);
+                deepEqual(stateMachine.called, [["doShow", "hidden"]]);
+            });
+
+            var eventSender = {};
+            _.extend(eventSender, Backbone.Events);
+
+            test("StateMachine - asReceiver as event callback", function () {
+                stateMachine.testSetUp("idle");
+                eventSender.bind("shake", stateMachine.asReceiver("shake"), stateMachine);
+                eventSender.trigger("shake", "gently");
+                equal(stateMachine.state, "shaking");
+                deepEqual(stateMachine.called, [["doShake", "idle"]]);
+                equal(stateMachine.strength, "gently");
+            });
+        });
+    </script>
+
+</head>
+<body>
+    <h1 id="qunit-header">QUnit example</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture">test markup, will be hidden</div>
+</body>
+</html>
