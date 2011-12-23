@@ -6,6 +6,7 @@
 // Documentation and Full License Available at:
 // https://github.com/sebpiq/backbone.statemachine
 
+// TODO: clash : state machine event/view event/Events event
 
 Backbone.StateMachine = (function(Backbone, _){
 
@@ -96,7 +97,10 @@ Backbone.StatefulView = (function(Backbone, _){
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
-        stateClassName: undefined,
+        // TODO: tests
+        viewEventReceiver: function(event) {
+            this.receive(event.type);
+        },
 
         _doTransition: function(handler, event, silent) {
             var leaveState = this.state;
@@ -108,6 +112,7 @@ Backbone.StatefulView = (function(Backbone, _){
             }
             return triggered;
         },
+
     });
 
     // Set up inheritance for StatefulView.

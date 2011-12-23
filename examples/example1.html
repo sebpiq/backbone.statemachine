@@ -1,8 +1,61 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
                     "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
-    <script type="text/javascript" src="../dependencies/jquery.min.js"></script>
-    <script type="text/javascript" src="../dependencies/underscore.min.js"></script>
-    <script type="text/javascript" src="../dependencies/backbone.js"></script>
-    <script type="text/javascript" src="../backbone.statemachine.js"></script>
+    <head>
+        <script type="text/javascript" src="../dependencies/jquery.min.js"></script>
+        <script type="text/javascript" src="../dependencies/underscore.min.js"></script>
+        <script type="text/javascript" src="../dependencies/backbone.js"></script>
+        <script type="text/javascript" src="../backbone.statemachine.js"></script>
+    </head>
+    <body>
+        <script>
+            $(function(){
+                var ButtonView = Backbone.StatefulView.extend({
+                    transitions: {
+                        "ready": {
+                            "click": {enterState: "saving"}
+                        },
+                        "saving": {
+                            "saved": {enterState: "ready"}
+                        }
+                    },
+                    events: {
+                        "click": "viewEventReceiver"
+                    },
+                });
+                myButtonView = new ButtonView({
+                    el: $("#saveButton"),
+                    state: "ready"
+                });
+                myButtonView.bind("enterState:saving", function(){
+                    myButtonView.el.attr({"disabled": "disabled"});
+                    myButtonView.el.html("Saving ...");
+                });
+                myButtonView.bind("leaveState:saving", function(){
+                    myButtonView.el.removeAttr("disabled");
+                    myButtonView.el.html("Save");
+                });
+                myButtonView.bind("enterState:saving", function(){
+                    setTimeout(function(){myButtonView.receive("saved")}, 3000);
+                });
+            });
+        </script>
+        <style>
+            #saveButton {
+                width: 100px;
+                height: 40px;
+                font-size: 16px;
+                border: none;
+            }
+            #saveButton.ready {
+                background-color: DarkGreen;
+                color: white;
+            }
+            #saveButton.saving {
+                background-color: LightGrey;
+                color: grey;
+            }
+        </style>
+        <button id="saveButton" class="ready">Save</button>
+    </body>
+</html>
