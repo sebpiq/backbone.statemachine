@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <script type="text/javascript" src="../dependencies/jquery.min.js"></script>
+    <script type="text/javascript" src="../dependencies/underscore.min.js"></script>
+    <script type="text/javascript" src="../dependencies/backbone.js"></script>
+    <script type="text/javascript" src="../backbone.statemachine.js"></script>
+    <script type="text/javascript" src="qunit.js"></script>
+    <link rel="stylesheet" href="qunit.css" type="text/css" media="screen" />
+
+    <script>
+        $(document).ready(function(){
+
+            module("StateMachine");
+
+            var stateMachine = {};
+            _.extend(stateMachine, Backbone.StateMachine, Backbone.Events, {
+                transitions: {
+                    "visible": {
+                        "hide": {enterState: "hidden"},
+                    },
+                    "hidden": {
+                        "show": {enterState: "visible"}
+                    }
+                },
+                testSetUp: function(state) {
+                    this.state = state;
+                    this.data = [];
+                },
+                testCb: function(){
+                    this.data.push(_.toArray(arguments));
+                }
+            });
+
+            stateMachine.startStateMachine({state: "hidden"});
+            stateMachine.bind("all", stateMachine.testCb);
+
+            test("StateMachine - simple transition", function () {
+                stateMachine.testSetUp("hidden");
+                equal(stateMachine.receive("show"), true);
+                equal(stateMachine.state, "visible");
+                deepEqual(stateMachine.data, [
+                    ["leaveState:hidden"],
+                    ["transition", "hidden", "visible"],
+                    ["transition:hidden:visible"],
+                    ["enterState:visible"]
+                ]);
+            });
+
+            test("StateMachine - transition with extra arguments", function () {
+                stateMachine.testSetUp("visible");
+                equal(stateMachine.receive("hide", "behind a tree"), true);
+                equal(stateMachine.state, "hidden");
+                deepEqual(stateMachine.data, [
+                    ["leaveState:visible", "behind a tree"],
+                    ["transition", "visible", "hidden", "behind a tree"],
+                    ["transition:visible:hidden", "behind a tree"],
+                    ["enterState:hidden", "behind a tree"]
+                ]);
+            });
+
+            test("StateMachine - no transition", function () {
+                stateMachine.testSetUp("hidden");
+                equal(stateMachine.receive("bla"), false);
+                equal(stateMachine.state, "hidden");
+                deepEqual(stateMachine.data, []);
+            });
+
+            test("StateMachine - receiveInSilence", function () {
+                stateMachine.testSetUp("hidden");
+                equal(stateMachine.receiveInSilence("show", "bla"), true);
+                equal(stateMachine.state, "visible");
+                deepEqual(stateMachine.data, []);
+            });
+
+            var eventSender = {};
+            _.extend(eventSender, Backbone.Events);
+
+            test("StateMachine - asReceiver as event callback", function () {
+                stateMachine.testSetUp("hidden");
+                eventSender.bind("fire", stateMachine.asReceiver("show"), stateMachine);
+                eventSender.trigger("fire", "in the castle");
+                equal(stateMachine.state, "visible");
+                equal(stateMachine.data.length, 4);
+            });
+
+            module("StatefulView");
+            
+            var TestStatefulView = Backbone.StatefulView.extend({
+                transitions: {
+                    "hidden": {
+                        "show": {enterState: "visible"}
+                    },
+                    "visible": {
+                        "hide": {enterState: "hidden", className: "hiddenBehindTree"}
+                    },
+                },
+                testSetUp: function(state) {
+                    this.state = state;
+                }
+            });
+            var el = $("<div>");
+            var statefulView = new TestStatefulView({
+                state: "hidden",
+                el: el,
+            });
+
+            test("StatefulView - transition css class auto", function () {
+                statefulView.testSetUp("hidden");
+                equal(statefulView.receive("show"), true);
+                equal(statefulView.state, "visible");
+                equal(statefulView.el.attr("class"), "visible");
+            });
+
+            test("StatefulView - transition css class provided", function () {
+                statefulView.testSetUp("visible");
+                equal(statefulView.receive("hide"), true);
+                equal(statefulView.state, "hidden");
+                equal(statefulView.el.attr("class"), "hiddenBehindTree");
+            });
+
+        });
+    </script>
+
+</head>
+<body>
+    <h1 id="qunit-header">QUnit example</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture">test markup, will be hidden</div>
+</body>
+</html>
