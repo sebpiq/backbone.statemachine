@@ -11,33 +11,25 @@ Backbone.StateMachine = (function(Backbone, _){
 
     var StateMachine = {
 
-        state : undefined,
+        state: undefined,
 
-        stateMachineDebug : false,
-
-        startStateMachine : function(options){
+        startStateMachine: function(options){
             this.handlers = {};
             options || (options = {});
-            if (options.transitions) this.transitions = options.transitions;
             if (options.state) this.state = options.state;
             this._bindTransitions();
-            if (this.stateMachineDebug) {
-                this.bind("all", function(){console.log(arguments, this)}, this);
-            }
         },
 
-        transition : function(fromState, event, handler) {
-            if (!(fromState in this.handlers)) this.handlers[fromState] = {};
-            handler.enterCb || (handler.enterCb = []);
-            handler.leaveCb || (handler.leaveCb = []);
-            this.handlers[fromState][event] = handler;
+        transition: function(leaveState, event, handler) {
+            if (!(leaveState in this.handlers)) this.handlers[leaveState] = {};
+            this.handlers[leaveState][event] = handler;
         },
 
-        receive : function(event) {
+        receive: function(event) {
             return this._receive.apply(this, [event, false].concat(_.toArray(arguments)));
         },
 
-        receiveInSilence : function(event) {
+        receiveInSilence: function(event) {
             return this._receive.apply(this, [event, true].concat(_.toArray(arguments)));
         },
 
@@ -47,7 +39,7 @@ Backbone.StateMachine = (function(Backbone, _){
             }, this);
         },
 
-        _receive : function(event, silent) {
+        _receive: function(event, silent) {
             if (!(this.state in this.handlers)) return false;
             if (!(event in this.handlers[this.state])) return false;
             var handler = this.handlers[this.state][event];
@@ -55,51 +47,34 @@ Backbone.StateMachine = (function(Backbone, _){
             return this._doTransition.apply(this, [handler, event, silent].concat(extraArgs));
         },
 
-        _doTransition : function(handler, event, silent) {
+        _doTransition: function(handler, event, silent) {
             var extraArgs = _.toArray(arguments).slice(3);
-            var cbArgs = [event].concat(extraArgs);
-            for (var i = 0; i < handler.leaveCb.length; i++){
-                handler.leaveCb[i].apply(this, cbArgs);
-            }
             if (silent == false) {
-                this.trigger.apply(this, ["leaveState:" + this.state].concat(extraArgs));
-                this.trigger.apply(this, ["transition", this.state, event, handler.toState]);
-                this.trigger.apply(this, ["enterState:" + handler.toState].concat(extraArgs));
+                var leaveState = this.state;
+                var enterState = handler.enterState;
+                this.trigger.apply(this, ["leaveState:" + leaveState].concat(extraArgs));
+                this.trigger.apply(this, ["transition", leaveState, enterState].concat(extraArgs));
+                this.trigger.apply(this, ["transition:" + leaveState + ":" + enterState].concat(extraArgs));
+                this.trigger.apply(this, ["enterState:" + enterState].concat(extraArgs));
             }
-            this.state = handler.toState;
-            for (var i = 0; i < handler.enterCb.length; i++){
-                handler.enterCb[i].apply(this, cbArgs);
-            }
+            this.state = handler.enterState;
             return true;
         },
 
-        _bindTransitions : function() {
+        // Creates transitions from `this.transitions`, which is a hash 
+        //      {   
+        //          <leaveState1>: {
+        //              <event1>: {enterState: <enterState1>, className: <className1>}
+        //          }
+        //      }
+        // Transitions are created by calling the `transition` method.
+        _bindTransitions: function() {
             if (!this.transitions) return;
-            var transitions = [];
-            for (var fromState in this.transitions) {
-                for (var event in this.transitions[fromState]) {
-                    var handler = _.clone(this.transitions[fromState][event]);
-                    // collecting the callbacks
-                    var enterCb = []; var leaveCb = [];
-                    handler.enterCb || (handler.enterCb = []);
-                    handler.leaveCb || (handler.leaveCb = []);
-                    for (var i = 0; i < handler.enterCb.length; i++){
-                        var method = this[handler.enterCb[i]]
-                        if (!method) throw new Error('Method "' + handler.enterCb[i] + '" does not exist');
-                        enterCb.push(method);
-                    }
-                    for (var i = 0; i < handler.leaveCb.length; i++){
-                        var method = this[handler.leaveCb[i]]
-                        if (!method) throw new Error('Method "' + handler.leaveCb[i] + '" does not exist');
-                        leaveCb.push(method);
-                    }
-                    handler.enterCb = enterCb; handler.leaveCb = leaveCb;
-                    // transition is ready to be added
-                    transitions.unshift([fromState, event, handler]);
+            for (var leaveState in this.transitions) {
+                for (var event in this.transitions[leaveState]) {
+                    var handler = _.clone(this.transitions[leaveState][event]);
+                    this.transition(leaveState, event, handler);
                 }
-            }
-            for (var i = 0; i < transitions.length; i++) {
-                this.transition.apply(this, transitions[i]);
             }
         },
     };
@@ -121,10 +96,10 @@ Backbone.StatefulView = (function(Backbone, _){
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
-        stateClassName : undefined,
+        stateClassName: undefined,
 
-        _doTransition : function(handler, event, silent) {
-            var fromState = this.state;
+        _doTransition: function(handler, event, silent) {
+            var leaveState = this.state;
             var triggered = Backbone.StateMachine._doTransition.apply(this, arguments);
             if (triggered && (this.el)) {
                 $(this.el).removeClass(this.stateClassName);
