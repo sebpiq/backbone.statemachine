@@ -20,12 +20,13 @@ Backbone.StateMachine = (function(Backbone, _){
             options || (options = {});
             this._bindStates();
             this._bindTransitions();
-            this.currentState = (options.currentState || undefined);
-            if (this.currentState) this.toState(this.currentState);
+            options.currentState && (this.currentState = options.currentState);
         },
 
         transition: function(leaveState, event, data) {
-            if (!(data.enterState in this._states)) throw Error('unknown state "' + data.enterState + '"');
+            if (!(data.enterState in this._states)) {
+                throw Error('unknown state "' + data.enterState + '"');
+            }
             if (!(leaveState in this._transitions)) this._transitions[leaveState] = {};
             this._transitions[leaveState][event] = data;
         },
@@ -49,8 +50,8 @@ Backbone.StateMachine = (function(Backbone, _){
         },
 
         toState: function(name) {
-            var cbArgs = _.toArray(arguments).slice(1);
-            this._callCallbacks(this._states[name].enterCb, cbArgs);
+            var extraArgs = _.toArray(arguments).slice(1);
+            this._callCallbacks(this._states[name].enterCb, extraArgs);
             this.currentState = name;
         },
 
@@ -64,18 +65,17 @@ Backbone.StateMachine = (function(Backbone, _){
 
         _doTransition: function(data, event, silent) {
             var extraArgs = _.toArray(arguments).slice(3);
-            var cbArgs = [event].concat(extraArgs);
             var leaveState = this.currentState;
             var enterState = data.enterState;
             if (silent == false) this.trigger.apply(this, ["leaveState:" + leaveState].concat(extraArgs));
-            this._callCallbacks(this._states[leaveState].leaveCb, cbArgs);
+            this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
             if (silent == false) {
                 this.trigger.apply(this, ["transition", leaveState, enterState].concat(extraArgs));
                 this.trigger.apply(this, ["transition:" + leaveState + ":" + enterState].concat(extraArgs));
             }
-            this._callCallbacks(data.callbacks, cbArgs);
+            this._callCallbacks(data.callbacks, extraArgs);
             if (silent == false) this.trigger.apply(this, ["enterState:" + enterState].concat(extraArgs));
-            this.toState.apply(this, [enterState].concat(cbArgs));
+            this.toState.apply(this, [enterState].concat(extraArgs));
             return true;
         },
 
@@ -124,9 +124,9 @@ Backbone.StateMachine = (function(Backbone, _){
         },
 
         // Convenience method for calling a list of callbacks.
-        _callCallbacks : function(cbArray, cbArgs) {
+        _callCallbacks : function(cbArray, extraArgs) {
             for (var i = 0; i < cbArray.length; i++){
-                cbArray[i].apply(this, cbArgs);
+                cbArray[i].apply(this, extraArgs);
             }
         }
 
@@ -146,7 +146,6 @@ Backbone.StatefulView = (function(Backbone, _){
     var StatefulView = function(options) {
         Backbone.View.prototype.constructor.apply(this, arguments);
         this.startStateMachine(options);
-        options.currentState && (this.currentState = options.currentState);
     };
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {

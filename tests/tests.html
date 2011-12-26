@@ -74,13 +74,23 @@
                 equal(stateMachine.receive("hide", "under your bed"), true);
                 equal(stateMachine.currentState, "hidden");
                 deepEqual(stateMachine.cbData, [
-                    ["leaveVisible1", "hide", "under your bed"],
-                    ["leaveVisible2", "hide", "under your bed"],
-                    ["visibleToHidden1", "hide", "under your bed"],
-                    ["visibleToHidden2", "hide", "under your bed"],
-                    ["enterHidden1", "hide", "under your bed"]
+                    ["leaveVisible1", "under your bed"],
+                    ["leaveVisible2", "under your bed"],
+                    ["visibleToHidden1", "under your bed"],
+                    ["visibleToHidden2", "under your bed"],
+                    ["enterHidden1", "under your bed"]
                 ]);
             });
+
+            test("StateMachine - toState", function () {
+                stateMachine.testSetUp("visible");
+                stateMachine.toState("hidden", "in the box");
+                equal(stateMachine.currentState, "hidden");
+                deepEqual(stateMachine.cbData, [
+                    ["enterHidden1", "in the box"]
+                ]);
+            });
+
 
             test("StateMachine - no transition", function () {
                 stateMachine.testSetUp("hidden", true);
@@ -96,10 +106,10 @@
                 equal(stateMachine.currentState, "visible");
                 deepEqual(stateMachine.eventsData, []);
                 deepEqual(stateMachine.cbData, [
-                    ["hiddenToVisible1", "show", "bla"],
-                    ["hiddenToVisible2", "show", "bla"],
-                    ["enterVisible1", "show", "bla"],
-                    ["enterVisible2", "show", "bla"],
+                    ["hiddenToVisible1", "bla"],
+                    ["hiddenToVisible2", "bla"],
+                    ["enterVisible1", "bla"],
+                    ["enterVisible2", "bla"],
                 ]);
             });
 
