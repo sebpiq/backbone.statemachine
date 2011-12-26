@@ -12,18 +12,24 @@ Backbone.StateMachine = (function(Backbone, _){
 
     var StateMachine = {
 
-        state: undefined,
+        currentState: undefined,
 
         startStateMachine: function(options){
-            this.handlers = {};
+            this._transitions = {};
+            this._states = {};
             options || (options = {});
-            if (options.state) this.state = options.state;
+            if (options.currentState) this.currentState = options.currentState;
+            this._bindStates();
             this._bindTransitions();
         },
 
-        transition: function(leaveState, event, handler) {
-            if (!(leaveState in this.handlers)) this.handlers[leaveState] = {};
-            this.handlers[leaveState][event] = handler;
+        transition: function(leaveState, event, data) {
+            if (!(leaveState in this._transitions)) this._transitions[leaveState] = {};
+            this._transitions[leaveState][event] = data;
+        },
+
+        state: function(name, data) {
+            this._states[name] = data;
         },
 
         receive: function(event) {
@@ -40,44 +46,91 @@ Backbone.StateMachine = (function(Backbone, _){
             }, this);
         },
 
-        _receive: function(event, silent) {
-            if (!(this.state in this.handlers)) return false;
-            if (!(event in this.handlers[this.state])) return false;
-            var handler = this.handlers[this.state][event];
-            var extraArgs = _.toArray(arguments).slice(3);
-            return this._doTransition.apply(this, [handler, event, silent].concat(extraArgs));
+        toState: function(name) {
+            var cbArgs = _.toArray(arguments).slice(1);
+            this._callCallbacks(this._states[name].enterCb, cbArgs);
+            this.currentState = name;
         },
 
-        _doTransition: function(handler, event, silent) {
+        _receive: function(event, silent) {
+            if (!(this.currentState in this._transitions)) return false;
+            if (!(event in this._transitions[this.currentState])) return false;
+            var data = this._transitions[this.currentState][event];
             var extraArgs = _.toArray(arguments).slice(3);
+            return this._doTransition.apply(this, [data, event, silent].concat(extraArgs));
+        },
+
+        _doTransition: function(data, event, silent) {
+            var extraArgs = _.toArray(arguments).slice(3);
+            var cbArgs = [event].concat(extraArgs);
+            var leaveState = this.currentState;
+            var enterState = data.enterState;
+            if (silent == false) this.trigger.apply(this, ["leaveState:" + leaveState].concat(extraArgs));
+            this._callCallbacks(this._states[leaveState].leaveCb, cbArgs);
             if (silent == false) {
-                var leaveState = this.state;
-                var enterState = handler.enterState;
-                this.trigger.apply(this, ["leaveState:" + leaveState].concat(extraArgs));
                 this.trigger.apply(this, ["transition", leaveState, enterState].concat(extraArgs));
                 this.trigger.apply(this, ["transition:" + leaveState + ":" + enterState].concat(extraArgs));
-                this.trigger.apply(this, ["enterState:" + enterState].concat(extraArgs));
             }
-            this.state = handler.enterState;
+            this._callCallbacks(data.callbacks, cbArgs);
+            if (silent == false) this.trigger.apply(this, ["enterState:" + enterState].concat(extraArgs));
+            this.toState.apply(this, [enterState].concat(cbArgs));
             return true;
         },
 
         // Creates transitions from `this.transitions`, which is a hash 
         //      {   
         //          <leaveState1>: {
-        //              <event1>: {enterState: <enterState1>, className: <className1>}
+        //              <event1>: {enterState: <enterState1>, callbacks: <callbackArray1>}
         //          }
         //      }
         // Transitions are created by calling the `transition` method.
-        _bindTransitions: function() {
+        _bindTransitions : function() {
             if (!this.transitions) return;
             for (var leaveState in this.transitions) {
                 for (var event in this.transitions[leaveState]) {
-                    var handler = _.clone(this.transitions[leaveState][event]);
-                    this.transition(leaveState, event, handler);
+                    var data = _.clone(this.transitions[leaveState][event]);
+                    if (!data.enterState in this._states) throw Error("unknown state " + data.enterState);
+                    data.callbacks = this._collectMethods((data.callbacks || []));
+                    this.transition(leaveState, event, data);
                 }
             }
         },
+
+        // Creates states from `this.states`, which is a hash 
+        //      {   
+        //          <state1>: {className: <cssClass1>, enterCb: <callbackArray1>, leaveCb: <callbackArray2>}
+        //      }
+        // States are created by calling the `state` method.
+        _bindStates : function() {
+            if (!this.states) return;
+            for (var name in this.states) {
+                var data = _.clone(this.states[name]);
+                data.enterCb = this._collectMethods((data.enterCb || []));
+                data.leaveCb = this._collectMethods((data.leaveCb || []));
+                this.state(name, data);
+            }
+        },
+
+        // Convenience method for collecting callbacks provided as strings.   
+        _collectMethods : function(methodNames) {
+            methods = [];
+            for (var i = 0; i < methodNames.length; i++){
+                var method = this[methodNames[i]];
+                if (!method) throw new Error('Method "' + methodNames[i] + '" does not exist');
+                methods.push(method);
+            }
+            return methods;
+        },
+
+        // Convenience method for calling a list of callbacks.
+        _callCallbacks : function(cbArray, cbArgs) {
+            for (var i = 0; i < cbArray.length; i++){
+                cbArray[i].apply(this, cbArgs);
+            }
+        }
+
+
+
     };
 
     StateMachine.version = "0.1.0";
@@ -92,7 +145,7 @@ Backbone.StatefulView = (function(Backbone, _){
     var StatefulView = function(options) {
         Backbone.View.prototype.constructor.apply(this, arguments);
         this.startStateMachine(options);
-        options.state && (this.state = options.state);
+        options.currentState && (this.currentState = options.currentState);
     };
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
@@ -102,15 +155,13 @@ Backbone.StatefulView = (function(Backbone, _){
             this.receive(event.type);
         },
 
-        _doTransition: function(handler, event, silent) {
-            var leaveState = this.state;
-            var triggered = Backbone.StateMachine._doTransition.apply(this, arguments);
-            if (triggered && (this.el)) {
-                $(this.el).removeClass(this.stateClassName);
-                this.stateClassName = (handler.className || this.state);
+        toState: function(name) {
+            Backbone.StateMachine.toState.apply(this, arguments);
+            if (this.el) {
+                $(this.el).removeClass((this.stateClassName || ""));
+                this.stateClassName = (this._states[name].className || name);
                 $(this.el).addClass(this.stateClassName);
             }
-            return triggered;
         },
 
     });
