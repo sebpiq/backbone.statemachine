@@ -18,12 +18,14 @@ Backbone.StateMachine = (function(Backbone, _){
             this._transitions = {};
             this._states = {};
             options || (options = {});
-            if (options.currentState) this.currentState = options.currentState;
             this._bindStates();
             this._bindTransitions();
+            this.currentState = (options.currentState || undefined);
+            if (this.currentState) this.toState(this.currentState);
         },
 
         transition: function(leaveState, event, data) {
+            if (!(data.enterState in this._states)) throw Error('unknown state "' + data.enterState + '"');
             if (!(leaveState in this._transitions)) this._transitions[leaveState] = {};
             this._transitions[leaveState][event] = data;
         },
@@ -89,7 +91,6 @@ Backbone.StateMachine = (function(Backbone, _){
             for (var leaveState in this.transitions) {
                 for (var event in this.transitions[leaveState]) {
                     var data = _.clone(this.transitions[leaveState][event]);
-                    if (!data.enterState in this._states) throw Error("unknown state " + data.enterState);
                     data.callbacks = this._collectMethods((data.callbacks || []));
                     this.transition(leaveState, event, data);
                 }

@@ -11,9 +11,9 @@
         <script>
             $(function(){
                 var ButtonView = Backbone.StatefulView.extend({
-                    initialize: function(opts) {
-                        this.bind("enterState:saving", this.enterSavingCb, this);
-                        this.bind("leaveState:saving", this.leaveSavingCb, this);
+                    states: {
+                        "saving": {enterCb: ["enterSavingCb"], leaveCb: ["leaveSavingCb"]},
+                        "ready": {},
                     },
                     transitions: {
                         "ready": {
@@ -38,7 +38,7 @@
 
                 myButtonView = new ButtonView({
                     el: $("#saveButton"),
-                    state: "ready"
+                    currentState: "ready"
                 });
 
                 myButtonView.bind("enterState:saving", function(){

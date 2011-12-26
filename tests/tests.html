@@ -38,21 +38,21 @@
                 leaveVisible2: function() {this._saveCb("leaveVisible2", arguments)},
                 enterHidden1: function() {this._saveCb("enterHidden1", arguments)},
                 _saveCb: function(name, args) {
-                    this.called.push([name].concat(_.toArray(args)));
+                    this.cbData.push([name].concat(_.toArray(args)));
                 },
                 testSetUp: function(initState, connect) {
                     this.unbind();
                     if (connect) stateMachine.bind("all", stateMachine.testCb);
-                    this.data = [];
-                    this.called = [];
                     this.toState(initState);
-                    this.data = [];
-                    this.called = [];
+                    this.eventsData = [];
+                    this.cbData = [];
                 },
                 testCb: function(){
-                    this.data.push(_.toArray(arguments));
-                    this.called = [];
-                }
+                    this.eventsData.push(_.toArray(arguments));
+                    this.cbData = [];
+                },
+                cbData: [],
+                eventsData: []
             });
 
             stateMachine.startStateMachine({currentState: "hidden"});
@@ -61,7 +61,7 @@
                 stateMachine.testSetUp("visible", true);
                 equal(stateMachine.receive("hide", "behind a tree"), true);
                 equal(stateMachine.currentState, "hidden");
-                deepEqual(stateMachine.data, [
+                deepEqual(stateMachine.eventsData, [
                     ["leaveState:visible", "behind a tree"],
                     ["transition", "visible", "hidden", "behind a tree"],
                     ["transition:visible:hidden", "behind a tree"],
@@ -73,7 +73,7 @@
                 stateMachine.testSetUp("visible");
                 equal(stateMachine.receive("hide", "under your bed"), true);
                 equal(stateMachine.currentState, "hidden");
-                deepEqual(stateMachine.called, [
+                deepEqual(stateMachine.cbData, [
                     ["leaveVisible1", "hide", "under your bed"],
                     ["leaveVisible2", "hide", "under your bed"],
                     ["visibleToHidden1", "hide", "under your bed"],
@@ -86,16 +86,16 @@
                 stateMachine.testSetUp("hidden", true);
                 equal(stateMachine.receive("hide"), false);
                 equal(stateMachine.currentState, "hidden");
-                deepEqual(stateMachine.data, []);
-                deepEqual(stateMachine.called, []);
+                deepEqual(stateMachine.eventsData, []);
+                deepEqual(stateMachine.cbData, []);
             });
 
             test("StateMachine - receiveInSilence", function () {
                 stateMachine.testSetUp("hidden", true);
                 equal(stateMachine.receiveInSilence("show", "bla"), true);
                 equal(stateMachine.currentState, "visible");
-                deepEqual(stateMachine.data, []);
-                deepEqual(stateMachine.called, [
+                deepEqual(stateMachine.eventsData, []);
+                deepEqual(stateMachine.cbData, [
                     ["hiddenToVisible1", "show", "bla"],
                     ["hiddenToVisible2", "show", "bla"],
                     ["enterVisible1", "show", "bla"],
@@ -111,7 +111,7 @@
                 eventSender.bind("fire", stateMachine.asReceiver("show"), stateMachine);
                 eventSender.trigger("fire", "in the castle");
                 equal(stateMachine.currentState, "visible");
-                equal(stateMachine.data.length, 4);
+                equal(stateMachine.eventsData.length, 4);
             });
 
             module("StatefulView");
