@@ -10,6 +10,7 @@
 
 Backbone.StateMachine = (function(Backbone, _){
 
+
     var StateMachine = {
 
         currentState: undefined,
@@ -21,6 +22,7 @@ Backbone.StateMachine = (function(Backbone, _){
             this._bindStates();
             this._bindTransitions();
             options.currentState && (this.currentState = options.currentState);
+            if (options.debugStateMachine == true) DebugView.register(this);
         },
 
         transition: function(leaveState, event, data) {
@@ -133,6 +135,61 @@ Backbone.StateMachine = (function(Backbone, _){
 
 
     };
+
+    var DebugView = Backbone.View.extend({
+        tagName: "div",
+        className: "backbone-statemachine-debug",
+        rendered: false,
+        render: function() {
+            if (!this.rendered) {
+                function periodicRender() {
+                    this.render();
+                    setTimeout(_.bind(periodicRender, this), 100);
+                }
+                setTimeout(_.bind(periodicRender, this), 100);
+                this.rendered = true;
+                var stateDiv = $("<div>", {"class": "state"});
+                $(this.el).append(stateDiv);
+                if ("el" in this.model) {
+                    $(this.el).hover(_.bind(function(){
+                        var modelEl = $(this.model.el);
+                        this.cssMem = {"background-color": "", "border": ""}
+                        modelEl.css({"background-color": "blue","border": "3px solid DarkBlue"});
+                    }, this));
+                    $(this.el).mouseleave(_.bind(function(){
+                        var modelEl = $(this.model.el);
+                        modelEl.css(this.cssMem);
+                    }, this));
+                }
+            }
+            this.$(".state").html(this.model.currentState);
+            return this;
+        },
+    }, {
+        register: function(instance) {
+            if (this.viewsArray.length == 0) {
+                var idName = "backbone-statemachine-debug-container";
+                this.el = $("<div>", {"id": idName});
+                this.el.appendTo($("body"));
+                $("<style>"+
+                "#"+idName+"{background-color:rgba(0,0,0,0.5);position:absolute;height:300px;width:300px;right:0;top:0;padding:10px;z-index:10;}"+
+                "."+DebugView.prototype.className+"{width:60px;height:60px;-moz-border-radius:30px;-webkit-border-radius:30px;border-radius:30px;}"+
+                "</style>").appendTo(this.el);
+            }
+            var debugView = new DebugView({model: instance});
+            var bgColor = "#ff0000"; //TODO: random color
+            $(debugView.el).appendTo(this.el).css({"background-color": bgColor});
+            debugView.render();
+            this.viewsArray.push(debugView);
+        },
+        update: function() {
+            _.each(this.viewsArray, function(view){
+                view.render();
+            });
+        },
+        viewsArray: [],
+        el: undefined,
+    });
 
     StateMachine.version = "0.1.0";
 

@@ -38,7 +38,8 @@
 
                 myButtonView = new ButtonView({
                     el: $("#saveButton"),
-                    currentState: "ready"
+                    currentState: "ready",
+                    debugStateMachine: true
                 });
 
                 myButtonView.bind("enterState:saving", function(){
