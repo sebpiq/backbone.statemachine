@@ -188,20 +188,24 @@ Backbone.StateMachine = (function(Backbone, _){
                 ).appendTo($("body"));
                 $("#backbone-statemachine-debug-hideshow", this.el).click(function(event){
                     event.preventDefault();
-                    if ($(this).html() == "hide") {
-                        $(this).html("show");
-                        $(container).addClass("collapsed");
-                    } else {
+                    if (this.collapsed) {
                         $(this).html("hide");
                         $(container).removeClass("collapsed");
+                        this.collapsed = false;
+                        $(".backbone-statemachine-debug", container).show();
+                    } else {
+                        $(this).html("show");
+                        $(container).addClass("collapsed");
+                        this.collapsed = true;
+                        $(".backbone-statemachine-debug", container).hide();
                     }
-                    $(".backbone-statemachine-debug", container).toggle();
                 });
             }
             var debugView = new DebugView({model: instance});
             var bgColor = this.pickColor();
             $(debugView.el).appendTo(this.el).css({"background-color": bgColor});
             debugView.render();
+            if (this.collapsed) $(debugView.el).hide();
             this.viewsArray.push(debugView);
         },
         update: function() {
@@ -214,6 +218,7 @@ Backbone.StateMachine = (function(Backbone, _){
         },
         viewsArray: [],
         el: undefined,
+        collapsed: false
     });
 
     StateMachine.version = "0.1.0";
