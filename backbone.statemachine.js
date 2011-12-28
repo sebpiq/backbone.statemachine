@@ -140,6 +140,9 @@ Backbone.StateMachine = (function(Backbone, _){
         tagName: "div",
         className: "backbone-statemachine-debug",
         rendered: false,
+        events: {
+            "click .log": "logStateMachine"
+        },
         render: function() {
             if (!this.rendered) {
                 function periodicRender() {
@@ -149,10 +152,6 @@ Backbone.StateMachine = (function(Backbone, _){
                 setTimeout(_.bind(periodicRender, this), 100);
                 this.rendered = true;
                 var innerHtml = $("<div class='state'></div><a class='log'>console.log</a>");
-                $(".log", innerHtml).click(_.bind(function(event){
-                    event.preventDefault();
-                    console.log(this.model);
-                }, this));
                 $(this.el).append(innerHtml);
                 if ("el" in this.model) {
                     $(this.el).hover(_.bind(function(){
@@ -169,6 +168,10 @@ Backbone.StateMachine = (function(Backbone, _){
             this.$(".state").html(this.model.currentState);
             return this;
         },
+        logStateMachine: function(event) {
+            event.preventDefault();
+            console.log(this.model);
+        }
     }, {
         register: function(instance) {
             if (this.viewsArray.length == 0) {
