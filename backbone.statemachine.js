@@ -148,8 +148,12 @@ Backbone.StateMachine = (function(Backbone, _){
                 }
                 setTimeout(_.bind(periodicRender, this), 100);
                 this.rendered = true;
-                var stateDiv = $("<div>", {"class": "state"});
-                $(this.el).append(stateDiv);
+                var innerHtml = $("<div class='state'></div><a class='log'>console.log</a>");
+                $(".log", innerHtml).click(_.bind(function(event){
+                    event.preventDefault();
+                    console.log(this.model);
+                }, this));
+                $(this.el).append(innerHtml);
                 if ("el" in this.model) {
                     $(this.el).hover(_.bind(function(){
                         var modelEl = $(this.model.el);
@@ -168,16 +172,31 @@ Backbone.StateMachine = (function(Backbone, _){
     }, {
         register: function(instance) {
             if (this.viewsArray.length == 0) {
-                var idName = "backbone-statemachine-debug-container";
-                this.el = $("<div>", {"id": idName});
-                this.el.appendTo($("body"));
-                $("<style>"+
-                "#"+idName+"{background-color:rgba(0,0,0,0.5);position:absolute;height:300px;width:300px;right:0;top:0;padding:10px;z-index:10;}"+
-                "."+DebugView.prototype.className+"{width:60px;height:60px;-moz-border-radius:30px;-webkit-border-radius:30px;border-radius:30px;}"+
-                "</style>").appendTo(this.el);
+                var container = this.el = $("<div id='backbone-statemachine-debug-container'>"+
+                    "<a id='backbone-statemachine-debug-hideshow'>hide</a>"+
+                    "<style>"+
+                    "#backbone-statemachine-debug-container{background-color:rgba(0,0,0,0.5);position:absolute;height:300px;width:300px;right:0;top:0;padding:10px;z-index:10;-moz-border-radius-bottomleft:30px;-webkit-border-radius-bottomleft:30px;border-bottom-left-radius:30px;}"+
+                    "#backbone-statemachine-debug-container.collapsed{height:20px;width:60px;}"+
+                    "#backbone-statemachine-debug-container a{color:blue;cursor:pointer;}"+
+                    ".backbone-statemachine-debug{width:60px;height:60px;-moz-border-radius:30px;-webkit-border-radius:30px;border-radius:30px;text-align:center;}"+
+                    ".backbone-statemachine-debug .state{font-weight:bold;}"+
+                    "a#backbone-statemachine-debug-hideshow{position:absolute;bottom:12px;left:12px;font-weight:bold;color:white;}"+
+                    "</style></div>"
+                ).appendTo($("body"));
+                $("#backbone-statemachine-debug-hideshow", this.el).click(function(event){
+                    event.preventDefault();
+                    if ($(this).html() == "hide") {
+                        $(this).html("show");
+                        $(container).addClass("collapsed");
+                    } else {
+                        $(this).html("hide");
+                        $(container).removeClass("collapsed");
+                    }
+                    $(".backbone-statemachine-debug", container).toggle();
+                });
             }
             var debugView = new DebugView({model: instance});
-            var bgColor = "#ff0000"; //TODO: random color
+            var bgColor = this.pickColor();
             $(debugView.el).appendTo(this.el).css({"background-color": bgColor});
             debugView.render();
             this.viewsArray.push(debugView);
@@ -186,6 +205,9 @@ Backbone.StateMachine = (function(Backbone, _){
             _.each(this.viewsArray, function(view){
                 view.render();
             });
+        },
+        pickColor: function() {
+            return '#'+Math.floor(Math.random()*16777215).toString(16);
         },
         viewsArray: [],
         el: undefined,
