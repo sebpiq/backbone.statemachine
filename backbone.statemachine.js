@@ -6,7 +6,7 @@
 // Documentation and Full License Available at:
 // https://github.com/sebpiq/backbone.statemachine
 
-// TODO: clash : state machine event/view event/Events event
+// TODO: name clash : state machine event/view event/Events event
 
 Backbone.StateMachine = (function(Backbone, _){
 
@@ -69,11 +69,12 @@ Backbone.StateMachine = (function(Backbone, _){
             var extraArgs = _.toArray(arguments).slice(3);
             var leaveState = this.currentState;
             var enterState = data.enterState;
+            var triggers = data.triggers;
             if (silent == false) this.trigger.apply(this, ["leaveState:" + leaveState].concat(extraArgs));
             this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
             if (silent == false) {
                 this.trigger.apply(this, ["transition", leaveState, enterState].concat(extraArgs));
-                this.trigger.apply(this, ["transition:" + leaveState + ":" + enterState].concat(extraArgs));
+                if (triggers) this.trigger.apply(this, [triggers].concat(extraArgs));
             }
             this._callCallbacks(data.callbacks, extraArgs);
             if (silent == false) this.trigger.apply(this, ["enterState:" + enterState].concat(extraArgs));
@@ -83,8 +84,12 @@ Backbone.StateMachine = (function(Backbone, _){
 
         // Creates transitions from `this.transitions`, which is a hash 
         //      {   
-        //          <leaveState1>: {
-        //              <event1>: {enterState: <enterState1>, callbacks: <callbackArray1>}
+        //          leaveStateName: {
+        //              event: {
+        //                  enterState: "enterStateName",
+        //                  triggers: "eventName",
+        //                  callbacks: [callback1, callback2, ...]
+        //              }
         //          }
         //      }
         // Transitions are created by calling the `transition` method.
@@ -101,7 +106,10 @@ Backbone.StateMachine = (function(Backbone, _){
 
         // Creates states from `this.states`, which is a hash 
         //      {   
-        //          <state1>: {className: <cssClass1>, enterCb: <callbackArray1>, leaveCb: <callbackArray2>}
+        //          stateName: {
+        //              className: "cssClass",
+        //              enterCb: [enterCb1, enterCb2, ...], leaveCb: [leaveCb1, leaveCb2, ...]
+        //          }
         //      }
         // States are created by calling the `state` method.
         _bindStates : function() {

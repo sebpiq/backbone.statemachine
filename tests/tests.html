@@ -18,10 +18,17 @@
             _.extend(stateMachine, Backbone.StateMachine, Backbone.Events, {
                 transitions: {
                     "visible": {
-                        "hide": {enterState: "hidden", callbacks: ["visibleToHidden1", "visibleToHidden2"]},
+                        "hide": {
+                            enterState: "hidden",
+                            callbacks: ["visibleToHidden1", "visibleToHidden2"]
+                        },
                     },
                     "hidden": {
-                        "show": {enterState: "visible", callbacks: ["hiddenToVisible1", "hiddenToVisible2"]}
+                        "show": {
+                            enterState: "visible",
+                            callbacks: ["hiddenToVisible1", "hiddenToVisible2"],
+                            triggers: "showTime"
+                        }
                     }
                 },
                 states: {
@@ -64,8 +71,19 @@
                 deepEqual(stateMachine.eventsData, [
                     ["leaveState:visible", "behind a tree"],
                     ["transition", "visible", "hidden", "behind a tree"],
-                    ["transition:visible:hidden", "behind a tree"],
                     ["enterState:hidden", "behind a tree"]
+                ]);
+            });
+
+            test("StateMachine - transition's 'triggers' option", function () {
+                stateMachine.testSetUp("hidden", true);
+                equal(stateMachine.receive("show", "shamelessly", "your", "feet"), true);
+                equal(stateMachine.currentState, "visible");
+                deepEqual(stateMachine.eventsData, [
+                    ["leaveState:hidden", "shamelessly", "your", "feet"],
+                    ["transition", "hidden", "visible", "shamelessly", "your", "feet"],
+                    ["showTime", "shamelessly", "your", "feet"],
+                    ["enterState:visible", "shamelessly", "your", "feet"]
                 ]);
             });
 
@@ -90,7 +108,6 @@
                     ["enterHidden1", "in the box"]
                 ]);
             });
-
 
             test("StateMachine - no transition", function () {
                 stateMachine.testSetUp("hidden", true);
