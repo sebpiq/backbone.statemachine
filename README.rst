@@ -12,9 +12,7 @@ It provides a ``Backbone.StateMachine`` mixin and a ``Backbone.StatefulView``.
 Example
 ========
 
-Here's how you can make a stateful backbone model :
-
-.. code-block:: javascript
+Here's how you can make a stateful backbone model ::
     
     // write a constructor that calls the Backbone.Model's constructor,
     // and then starts the state machine. 
