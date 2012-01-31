@@ -12,44 +12,44 @@
     <script>
         $(document).ready(function(){
 
-            module("StateMachine");
+            module('StateMachine');
 
             var stateMachine = {};
             _.extend(stateMachine, Backbone.StateMachine, Backbone.Events, {
                 transitions: {
-                    "visible": {
-                        "hide": {
-                            enterState: "hidden",
-                            callbacks: ["visibleToHidden1", "visibleToHidden2"]
+                    'visible': {
+                        'hide': {
+                            enterState: 'hidden',
+                            callbacks: ['visibleToHidden1', 'visibleToHidden2']
                         },
                     },
-                    "hidden": {
-                        "show": {
-                            enterState: "visible",
-                            callbacks: ["hiddenToVisible1", "hiddenToVisible2"],
-                            triggers: "showTime"
+                    'hidden': {
+                        'show': {
+                            enterState: 'visible',
+                            callbacks: ['hiddenToVisible1', 'hiddenToVisible2'],
+                            triggers: 'showTime'
                         }
                     }
                 },
                 states: {
-                    "visible": {enterCb: ["enterVisible1", "enterVisible2"], leaveCb: ["leaveVisible1", "leaveVisible2"]},
-                    "hidden": {enterCb: ["enterHidden1"]},
+                    'visible': {enterCb: ['enterVisible1', 'enterVisible2'], leaveCb: ['leaveVisible1', 'leaveVisible2']},
+                    'hidden': {enterCb: ['enterHidden1']},
                 },
-                visibleToHidden1: function() {this._saveCb("visibleToHidden1", arguments)},
-                visibleToHidden2: function() {this._saveCb("visibleToHidden2", arguments)},
-                hiddenToVisible1: function() {this._saveCb("hiddenToVisible1", arguments)},
-                hiddenToVisible2: function() {this._saveCb("hiddenToVisible2", arguments)},
-                enterVisible1: function() {this._saveCb("enterVisible1", arguments)},
-                enterVisible2: function() {this._saveCb("enterVisible2", arguments)},
-                leaveVisible1: function() {this._saveCb("leaveVisible1", arguments)},
-                leaveVisible2: function() {this._saveCb("leaveVisible2", arguments)},
-                enterHidden1: function() {this._saveCb("enterHidden1", arguments)},
+                visibleToHidden1: function() {this._saveCb('visibleToHidden1', arguments)},
+                visibleToHidden2: function() {this._saveCb('visibleToHidden2', arguments)},
+                hiddenToVisible1: function() {this._saveCb('hiddenToVisible1', arguments)},
+                hiddenToVisible2: function() {this._saveCb('hiddenToVisible2', arguments)},
+                enterVisible1: function() {this._saveCb('enterVisible1', arguments)},
+                enterVisible2: function() {this._saveCb('enterVisible2', arguments)},
+                leaveVisible1: function() {this._saveCb('leaveVisible1', arguments)},
+                leaveVisible2: function() {this._saveCb('leaveVisible2', arguments)},
+                enterHidden1: function() {this._saveCb('enterHidden1', arguments)},
                 _saveCb: function(name, args) {
                     this.cbData.push([name].concat(_.toArray(args)));
                 },
                 testSetUp: function(initState, connect) {
                     this.unbind();
-                    if (connect) stateMachine.bind("all", stateMachine.testCb);
+                    if (connect) stateMachine.bind('all', stateMachine.testCb);
                     this.toState(initState);
                     this.eventsData = [];
                     this.cbData = [];
@@ -62,122 +62,122 @@
                 eventsData: []
             });
 
-            stateMachine.startStateMachine({currentState: "hidden"});
+            stateMachine.startStateMachine({currentState: 'hidden'});
 
-            test("StateMachine - transition events and arguments", function () {
-                stateMachine.testSetUp("visible", true);
-                equal(stateMachine.receive("hide", "behind a tree"), true);
-                equal(stateMachine.currentState, "hidden");
+            test('StateMachine - transition events and arguments', function () {
+                stateMachine.testSetUp('visible', true);
+                equal(stateMachine.receive('hide', 'behind a tree'), true);
+                equal(stateMachine.currentState, 'hidden');
                 deepEqual(stateMachine.eventsData, [
-                    ["leaveState:visible", "behind a tree"],
-                    ["transition", "visible", "hidden", "behind a tree"],
-                    ["enterState:hidden", "behind a tree"]
+                    ['leaveState:visible', 'behind a tree'],
+                    ['transition', 'visible', 'hidden', 'behind a tree'],
+                    ['enterState:hidden', 'behind a tree']
                 ]);
             });
 
             test("StateMachine - transition's 'triggers' option", function () {
-                stateMachine.testSetUp("hidden", true);
-                equal(stateMachine.receive("show", "shamelessly", "your", "feet"), true);
-                equal(stateMachine.currentState, "visible");
+                stateMachine.testSetUp('hidden', true);
+                equal(stateMachine.receive('show', 'shamelessly', 'your', 'feet'), true);
+                equal(stateMachine.currentState, 'visible');
                 deepEqual(stateMachine.eventsData, [
-                    ["leaveState:hidden", "shamelessly", "your", "feet"],
-                    ["transition", "hidden", "visible", "shamelessly", "your", "feet"],
-                    ["showTime", "shamelessly", "your", "feet"],
-                    ["enterState:visible", "shamelessly", "your", "feet"]
+                    ['leaveState:hidden', 'shamelessly', 'your', 'feet'],
+                    ['transition', 'hidden', 'visible', 'shamelessly', 'your', 'feet'],
+                    ['showTime', 'shamelessly', 'your', 'feet'],
+                    ['enterState:visible', 'shamelessly', 'your', 'feet']
                 ]);
             });
 
-            test("StateMachine - transition callbacks and arguments", function () {
-                stateMachine.testSetUp("visible");
-                equal(stateMachine.receive("hide", "under your bed"), true);
-                equal(stateMachine.currentState, "hidden");
+            test('StateMachine - transition callbacks and arguments', function () {
+                stateMachine.testSetUp('visible');
+                equal(stateMachine.receive('hide', 'under your bed'), true);
+                equal(stateMachine.currentState, 'hidden');
                 deepEqual(stateMachine.cbData, [
-                    ["leaveVisible1", "under your bed"],
-                    ["leaveVisible2", "under your bed"],
-                    ["visibleToHidden1", "under your bed"],
-                    ["visibleToHidden2", "under your bed"],
-                    ["enterHidden1", "under your bed"]
+                    ['leaveVisible1', 'under your bed'],
+                    ['leaveVisible2', 'under your bed'],
+                    ['visibleToHidden1', 'under your bed'],
+                    ['visibleToHidden2', 'under your bed'],
+                    ['enterHidden1', 'under your bed']
                 ]);
             });
 
-            test("StateMachine - toState", function () {
-                stateMachine.testSetUp("visible");
-                stateMachine.toState("hidden", "in the box");
-                equal(stateMachine.currentState, "hidden");
+            test('StateMachine - toState', function () {
+                stateMachine.testSetUp('visible');
+                stateMachine.toState('hidden', 'in the box');
+                equal(stateMachine.currentState, 'hidden');
                 deepEqual(stateMachine.cbData, [
-                    ["enterHidden1", "in the box"]
+                    ['enterHidden1', 'in the box']
                 ]);
             });
 
-            test("StateMachine - no transition", function () {
-                stateMachine.testSetUp("hidden", true);
-                equal(stateMachine.receive("hide"), false);
-                equal(stateMachine.currentState, "hidden");
+            test('StateMachine - no transition', function () {
+                stateMachine.testSetUp('hidden', true);
+                equal(stateMachine.receive('hide'), false);
+                equal(stateMachine.currentState, 'hidden');
                 deepEqual(stateMachine.eventsData, []);
                 deepEqual(stateMachine.cbData, []);
             });
 
-            test("StateMachine - receiveInSilence", function () {
-                stateMachine.testSetUp("hidden", true);
-                equal(stateMachine.receiveInSilence("show", "bla"), true);
-                equal(stateMachine.currentState, "visible");
+            test('StateMachine - receiveInSilence', function () {
+                stateMachine.testSetUp('hidden', true);
+                equal(stateMachine.receiveInSilence('show', 'bla'), true);
+                equal(stateMachine.currentState, 'visible');
                 deepEqual(stateMachine.eventsData, []);
                 deepEqual(stateMachine.cbData, [
-                    ["hiddenToVisible1", "bla"],
-                    ["hiddenToVisible2", "bla"],
-                    ["enterVisible1", "bla"],
-                    ["enterVisible2", "bla"],
+                    ['hiddenToVisible1', 'bla'],
+                    ['hiddenToVisible2', 'bla'],
+                    ['enterVisible1', 'bla'],
+                    ['enterVisible2', 'bla'],
                 ]);
             });
 
             var eventSender = {};
             _.extend(eventSender, Backbone.Events);
 
-            test("StateMachine - asReceiver as event callback", function () {
-                stateMachine.testSetUp("hidden", true);
-                eventSender.bind("fire", stateMachine.asReceiver("show"), stateMachine);
-                eventSender.trigger("fire", "in the castle");
-                equal(stateMachine.currentState, "visible");
+            test('StateMachine - asReceiver as event callback', function () {
+                stateMachine.testSetUp('hidden', true);
+                eventSender.bind('fire', stateMachine.asReceiver('show'), stateMachine);
+                eventSender.trigger('fire', 'in the castle');
+                equal(stateMachine.currentState, 'visible');
                 equal(stateMachine.eventsData.length, 4);
             });
 
-            module("StatefulView");
+            module('StatefulView');
             
             var TestStatefulView = Backbone.StatefulView.extend({
                 transitions: {
-                    "hidden": {
-                        "show": {enterState: "visible"}
+                    'hidden': {
+                        'show': {enterState: 'visible'}
                     },
-                    "visible": {
-                        "hide": {enterState: "hidden"}
+                    'visible': {
+                        'hide': {enterState: 'hidden'}
                     },
                 },
                 states: {
-                    "hidden": {className: "hiddenBehindTree"},
-                    "visible": {}
+                    'hidden': {className: 'hiddenBehindTree'},
+                    'visible': {}
                 },
                 testSetUp: function(currentState) {
                     this.currentState = currentState;
                 }
             });
-            var el = $("<div>");
+            var el = $('<div>');
             var statefulView = new TestStatefulView({
-                currentState: "hidden",
+                currentState: 'hidden',
                 el: el,
             });
 
-            test("StatefulView - transition css class auto", function () {
-                statefulView.testSetUp("hidden");
-                equal(statefulView.receive("show"), true);
-                equal(statefulView.currentState, "visible");
-                equal(statefulView.el.attr("class"), "visible");
+            test('StatefulView - transition css class auto', function () {
+                statefulView.testSetUp('hidden');
+                equal(statefulView.receive('show'), true);
+                equal(statefulView.currentState, 'visible');
+                equal(statefulView.el.attr('class'), 'visible');
             });
 
-            test("StatefulView - transition css class provided", function () {
-                statefulView.testSetUp("visible");
-                equal(statefulView.receive("hide"), true);
-                equal(statefulView.currentState, "hidden");
-                equal(statefulView.el.attr("class"), "hiddenBehindTree");
+            test('StatefulView - transition css class provided', function () {
+                statefulView.testSetUp('visible');
+                equal(statefulView.receive('hide'), true);
+                equal(statefulView.currentState, 'hidden');
+                equal(statefulView.el.attr('class'), 'hiddenBehindTree');
             });
 
         });

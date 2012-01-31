@@ -11,10 +11,13 @@
 Backbone.StateMachine = (function(Backbone, _){
 
 
+    // Mixin object to create a state machine out of any other object.
+    // Note that this requires to be mixed-in with Backbone.Event as well. 
     var StateMachine = {
 
         currentState: undefined,
 
+        // Initializes the state machine : binds states, transitions, ...
         startStateMachine: function(options){
             this._transitions = {};
             this._states = {};
@@ -25,6 +28,7 @@ Backbone.StateMachine = (function(Backbone, _){
             if (options.debugStateMachine == true) DebugView.register(this);
         },
 
+        // Declares a new transition on the state machine.
         transition: function(leaveState, event, data) {
             if (!(data.enterState in this._states)) {
                 throw Error('unknown state "' + data.enterState + '"');
@@ -33,30 +37,39 @@ Backbone.StateMachine = (function(Backbone, _){
             this._transitions[leaveState][event] = data;
         },
 
+        // Declares a new state on the state machine
         state: function(name, data) {
             this._states[name] = data;
         },
 
+        // Triggers an event on the state machine. All arguments passed to receive
+        // - except 'event' - are also passed to the callbacks.
         receive: function(event) {
             return this._receive.apply(this, [event, false].concat(_.toArray(arguments)));
         },
 
+        // Triggers an event on the state machine. If a transition occur, the state machine
+        // won't send any event.
         receiveInSilence: function(event) {
             return this._receive.apply(this, [event, true].concat(_.toArray(arguments)));
         },
 
+        // Wraps 'receive(event)' into a callback bound to the state machine. 
         asReceiver: function(event) {
             return _.bind(function(){
                 return this.receive.apply(this, [event].concat(_.toArray(arguments)));
             }, this);
         },
 
+        // Forces the state machine to state 'name'. No transition will occur, but the
+        // normal "enter new state" mess will (calling the callbacks, ...).
         toState: function(name) {
             var extraArgs = _.toArray(arguments).slice(1);
             this._callCallbacks(this._states[name].enterCb, extraArgs);
             this.currentState = name;
         },
 
+        // Does the actual work when receiving an event.
         _receive: function(event, silent) {
             if (!(this.currentState in this._transitions)) return false;
             if (!(event in this._transitions[this.currentState])) return false;
@@ -65,19 +78,20 @@ Backbone.StateMachine = (function(Backbone, _){
             return this._doTransition.apply(this, [data, event, silent].concat(extraArgs));
         },
 
+        // Executes a transition.
         _doTransition: function(data, event, silent) {
             var extraArgs = _.toArray(arguments).slice(3);
             var leaveState = this.currentState;
             var enterState = data.enterState;
             var triggers = data.triggers;
-            if (silent == false) this.trigger.apply(this, ["leaveState:" + leaveState].concat(extraArgs));
+            if (silent == false) this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
             this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
             if (silent == false) {
-                this.trigger.apply(this, ["transition", leaveState, enterState].concat(extraArgs));
+                this.trigger.apply(this, ['transition', leaveState, enterState].concat(extraArgs));
                 if (triggers) this.trigger.apply(this, [triggers].concat(extraArgs));
             }
             this._callCallbacks(data.callbacks, extraArgs);
-            if (silent == false) this.trigger.apply(this, ["enterState:" + enterState].concat(extraArgs));
+            if (silent == false) this.trigger.apply(this, ['enterState:' + enterState].concat(extraArgs));
             this.toState.apply(this, [enterState].concat(extraArgs));
             return true;
         },
@@ -86,8 +100,8 @@ Backbone.StateMachine = (function(Backbone, _){
         //      {   
         //          leaveStateName: {
         //              event: {
-        //                  enterState: "enterStateName",
-        //                  triggers: "eventName",
+        //                  enterState: 'enterStateName',
+        //                  triggers: 'eventName',
         //                  callbacks: [callback1, callback2, ...]
         //              }
         //          }
@@ -107,7 +121,7 @@ Backbone.StateMachine = (function(Backbone, _){
         // Creates states from `this.states`, which is a hash 
         //      {   
         //          stateName: {
-        //              className: "cssClass",
+        //              className: 'cssClass',
         //              enterCb: [enterCb1, enterCb2, ...], leaveCb: [leaveCb1, leaveCb2, ...]
         //          }
         //      }
@@ -144,28 +158,34 @@ Backbone.StateMachine = (function(Backbone, _){
 
     };
 
+    // View for a state machine in the debugger.
     var DebugView = Backbone.View.extend({
-        tagName: "div",
-        className: "backbone-statemachine-debug",
+        tagName: 'div',
+        className: 'backbone-statemachine-debug',
         rendered: false,
         events: {
-            "click .log": "logStateMachine"
+            'click .log': 'logStateMachine'
         },
         render: function() {
+            // This is only called when rendering the first time.
             if (!this.rendered) {
+                // sets-up periodic rendering, so the debug view is always up-to-date. 
                 function periodicRender() {
                     this.render();
                     setTimeout(_.bind(periodicRender, this), 100);
                 }
                 setTimeout(_.bind(periodicRender, this), 100);
                 this.rendered = true;
-                var innerHtml = $("<div class='state'></div><a class='log'>console.log</a>");
+                // sets-up the debug view's html
+                var innerHtml = $('<div class="state"></div><a class="log">console.log</a>');
                 $(this.el).append(innerHtml);
-                if ("el" in this.model) {
+                // when the debug view is hovered, if the state machine it represents is a view
+                // itself, we highlight its element on the page.
+                if ('el' in this.model) {
                     $(this.el).hover(_.bind(function(){
                         var modelEl = $(this.model.el);
-                        this.cssMem = {"background-color": "", "border": ""}
-                        modelEl.css({"background-color": "blue","border": "3px solid DarkBlue"});
+                        this.cssMem = {'background-color': '', 'border': ''}
+                        modelEl.css({'background-color': 'blue','border': '3px solid DarkBlue'});
                     }, this));
                     $(this.el).mouseleave(_.bind(function(){
                         var modelEl = $(this.model.el);
@@ -173,7 +193,8 @@ Backbone.StateMachine = (function(Backbone, _){
                     }, this));
                 }
             }
-            this.$(".state").html(this.model.currentState);
+            // this does the actual updating of the debug view's html.
+            this.$('.state').html(this.model.currentState);
             return this;
         },
         logStateMachine: function(event) {
@@ -181,37 +202,41 @@ Backbone.StateMachine = (function(Backbone, _){
             console.log(this.model);
         }
     }, {
+        // Registers a state machine in the debugger, so that a debug view will be created for it.
         register: function(instance) {
+            // If this is the first state machine registered in the debugger,
+            // we create the debugger's html.
             if (this.viewsArray.length == 0) {
-                var container = this.el = $("<div id='backbone-statemachine-debug-container'>"+
-                    "<a id='backbone-statemachine-debug-hideshow'>hide</a>"+
-                    "<style>"+
-                    "#backbone-statemachine-debug-container{background-color:rgba(0,0,0,0.5);position:absolute;height:300px;width:300px;right:0;top:0;padding:10px;z-index:10;-moz-border-radius-bottomleft:30px;-webkit-border-radius-bottomleft:30px;border-bottom-left-radius:30px;}"+
-                    "#backbone-statemachine-debug-container.collapsed{height:20px;width:60px;}"+
-                    "#backbone-statemachine-debug-container a{color:blue;cursor:pointer;}"+
-                    ".backbone-statemachine-debug{width:60px;height:60px;-moz-border-radius:30px;-webkit-border-radius:30px;border-radius:30px;text-align:center;}"+
-                    ".backbone-statemachine-debug .state{font-weight:bold;}"+
-                    "a#backbone-statemachine-debug-hideshow{position:absolute;bottom:12px;left:12px;font-weight:bold;color:white;}"+
-                    "</style></div>"
-                ).appendTo($("body"));
-                $("#backbone-statemachine-debug-hideshow", this.el).click(function(event){
+                var container = this.el = $('<div id="backbone-statemachine-debug-container">'+
+                    '<h3>backbone.statemachine: DEBUGGER</h3>'+
+                    '<a id="backbone-statemachine-debug-hideshow">hide</a>'+
+                    '<style>'+
+                    '#backbone-statemachine-debug-container{background-color:rgba(0,0,0,0.5);position:absolute;height:300px;width:300px;right:0;top:0;padding:10px;z-index:10;-moz-border-radius-bottomleft:30px;-webkit-border-radius-bottomleft:30px;border-bottom-left-radius:30px;}'+
+                    '#backbone-statemachine-debug-container.collapsed{height:20px;width:60px;}'+
+                    '#backbone-statemachine-debug-container a{color:blue;cursor:pointer;}'+
+                    '#backbone-statemachine-debug-container h3{margin:0;text-align:center;color:white;margin-bottom:0.5em;}'+
+                    '.backbone-statemachine-debug{width:60px;height:60px;-moz-border-radius:30px;-webkit-border-radius:30px;border-radius:30px;text-align:center;}'+
+                    '.backbone-statemachine-debug .state{font-weight:bold;}'+
+                    'a#backbone-statemachine-debug-hideshow{position:absolute;bottom:12px;left:12px;font-weight:bold;color:white;}'+
+                    '</style></div>'
+                ).appendTo($('body'));
+                $('#backbone-statemachine-debug-hideshow', this.el).click(function(event){
                     event.preventDefault();
                     if (this.collapsed) {
-                        $(this).html("hide");
-                        $(container).removeClass("collapsed");
+                        $(container).removeClass('collapsed').children().show();
+                        $(this).html('hide');
                         this.collapsed = false;
-                        $(".backbone-statemachine-debug", container).show();
                     } else {
-                        $(this).html("show");
-                        $(container).addClass("collapsed");
+                        $(container).addClass('collapsed').children().hide();
+                        $(this).html('show').show();
                         this.collapsed = true;
-                        $(".backbone-statemachine-debug", container).hide();
                     }
                 });
             }
+            // create the debug view, pick a random color for it, and add it to the debugger.
             var debugView = new DebugView({model: instance});
             var bgColor = this.pickColor();
-            $(debugView.el).appendTo(this.el).css({"background-color": bgColor});
+            $(debugView.el).appendTo(this.el).css({'background-color': bgColor});
             debugView.render();
             if (this.collapsed) $(debugView.el).hide();
             this.viewsArray.push(debugView);
@@ -229,13 +254,14 @@ Backbone.StateMachine = (function(Backbone, _){
         collapsed: false
     });
 
-    StateMachine.version = "0.1.0";
+    StateMachine.version = '0.1.0';
 
     return StateMachine;
 
 })(Backbone, _);
 
 
+// A Backbone view that is also a state machine.
 Backbone.StatefulView = (function(Backbone, _){
 
     var StatefulView = function(options) {
@@ -253,7 +279,7 @@ Backbone.StatefulView = (function(Backbone, _){
         toState: function(name) {
             Backbone.StateMachine.toState.apply(this, arguments);
             if (this.el) {
-                $(this.el).removeClass((this.stateClassName || ""));
+                $(this.el).removeClass((this.stateClassName || ''));
                 this.stateClassName = (this._states[name].className || name);
                 $(this.el).addClass(this.stateClassName);
             }
