@@ -13,38 +13,38 @@
             $(function(){
                 var ButtonView = Backbone.StatefulView.extend({
                     states: {
-                        "saving": {enterCb: ["enterSavingCb"], leaveCb: ["leaveSavingCb"]},
-                        "ready": {},
+                        'saving': {enterCb: ['enterSavingCb'], leaveCb: ['leaveSavingCb']},
+                        'ready': {},
                     },
                     transitions: {
-                        "ready": {
-                            "click": {enterState: "saving"}
+                        'ready': {
+                            'click': {enterState: 'saving'}
                         },
-                        "saving": {
-                            "saved": {enterState: "ready"}
+                        'saving': {
+                            'saved': {enterState: 'ready'}
                         }
                     },
                     events: {
-                        "click": "viewEventReceiver"
+                        'click': 'viewEventReceiver'
                     },
                     enterSavingCb: function(){
-                        this.el.attr({"disabled": "disabled"});
-                        this.el.html("Saving ...");
+                        this.el.attr({'disabled': 'disabled'});
+                        this.el.html('Saving ...');
                     },
                     leaveSavingCb: function(){
-                        this.el.removeAttr("disabled");
-                        this.el.html("Save");
+                        this.el.removeAttr('disabled');
+                        this.el.html('Save');
                     }
                 });
 
                 myButtonView = new ButtonView({
-                    el: $("#saveButton"),
-                    currentState: "ready",
+                    el: $('#saveButton'),
+                    currentState: 'ready',
                     debugStateMachine: true
                 });
 
-                myButtonView.bind("enterState:saving", function(){
-                    setTimeout(function(){myButtonView.receive("saved")}, 3000);
+                myButtonView.bind('enterState:saving', function(){
+                    setTimeout(function(){myButtonView.receive('saved')}, 3000);
                 });
             });
         </script>

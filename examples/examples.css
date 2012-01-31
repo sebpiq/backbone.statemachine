@@ -1,0 +1,8 @@
+.exampleNotes {
+    font-family: courier;
+    margin-top: 1em;
+    padding: 0.5em;
+    width: 50%;
+    border: 1px solid grey;
+    border-radius: 10px;
+}
