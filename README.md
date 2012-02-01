@@ -19,24 +19,35 @@ StateMachine
 
 ### Declaring a state machine ###########
 
+Let's declare a very simple state machine representing an HTML element that can be either hidden or visible.
+
+This machine will have 2 states, *hidden* and *visible*, and 2 transitions :
+
+    hidden  --['show']--> visible
+    visible --['hide']--> hidden
+
+Also, in order to actually show or hide the element, everytime the state machine enters in state *visible* a method *doShow* will be called, and everytime it leaves the state *visible*, a method *doHide* will be called.
+
 ```javascript
 
-    var toggle = {};
+    var element = {el: $('#myElement')};
 
     // !!! note that `StateMachine` requires the `Events` mixin
-    _.extend(toggle, Backbone.StateMachine, Backbone.Events, {
+    _.extend(element, Backbone.StateMachine, Backbone.Events, {
         states: {
-            visible: stateOpts1,         // an object {option: value}
-            hidden: stateOpts2,
+            visible: {enterCb: ['doShow'], leaveCb: ['doHide']},  // All options see: 'state options'
+            hidden: {},
         },
         transitions: {
             visible: {
-                hide: transitionOpts1,   // an object {option: value}
+                hide: {enterState: 'hidden'},                     // All options see: 'transition options'
             },
             hidden: {
-                show: transitionOpts2
+                show: {enterState: 'visible'}
             }
         },
+        doShow: function() { this.el.show(); },
+        doHide: function() { this.el.hide(); },
     });
 ```
 
@@ -52,69 +63,49 @@ StateMachine
 - `triggers` - Backbone event to trigger when transition is crossed _(Optional)_. 
 
 
-For example : 
-
-```javascript
-
-    var toggle = {};
-    _.extend(toggle, Backbone.StateMachine, Backbone.Events, {
-        states: {
-            visible: {enterCb: ['doShow'], leaveCb: ['doHide']},
-            hidden: {},
-        },
-        transitions: {
-            visible: {
-                hide: {enterState: 'hidden'},
-            },
-            hidden: {
-                show: {enterState: 'visible'}
-            }
-        },
-        doShow: function() { alert('Now showing !!!') },
-        doHide: function() { alert('Now hiding ...') },
-    });
-```
-
-The above basically declares 2 states, *hidden* and *visible*, and 2 transitions :
-
-    hidden  --['show']--> visible
-    visible --['hide']--> hidden
-
-Also, everytime the state machine enters in state *visible* the method *doShow* is called, and everytime it leaves the state *visible*, method *doHide* is called.
-
 ### Triggering transitions ###########
 
 ```javascript
 
     // !!! this method needs to be called before the state machine can be used
-    toggle.startStateMachine({currentState: 'visible'});
+    element.startStateMachine({currentState: 'visible'});
 
-    toggle.currentState;                // 'visible'
-    toggle.receive('hide');             // a transition is triggered, and an alert should open
-    toggle.currentState;                // 'hidden'
-    toggle.receive('hide');             // no transition is defined
-    toggle.receive('show', 'quick');    // extra arguments will be passed to the callbacks
+    element.currentState;                // 'visible'
+    element.receive('hide');             // a transition is triggered, and an alert should open
+    element.currentState;                // 'hidden'
+    element.receive('hide');             // no transition is defined
+    element.receive('show', 'quick');    // extra arguments will be passed to the callbacks
 ```
 
 
 ### Transition events ###########
 
-Every time a transition is crossed the state machine triggers events. That way, you can synchronize it with other objects or other state machines. 
+Every time a transition is crossed, the state machine triggers a bunch of Backbone events. This way, you can setup an efficient event-based communication between the different parts of your application. Cool thing with using this method is that those different parts don't need to know each other.
 
 ```javascript
 
-    toggle.bind('transition', function(leaveState, enterState){
+    element.bind('transition', function(leaveState, enterState){
         alert('Transition from state "'+leaveState+'" to state "'+enterState+'"');
     });
-    toggle.bind('leaveState:hidden', function(){
-        alert('Leaving state "hidden" !!!');
+    element.bind('leaveState:hidden', function(){
+        // synchronize other objects in your application
+        bla.receive('activate');
+        aView.render();
     });
-    toggle.bind('enterState:hidden', function(){
-        alert('Entering state "hidden" ...');
+    element.bind('enterState:hidden', function(){
+        // synchronize other objects in your application
+        bla.receive('deactivate');
     });
 ```
 
-Also, if your transition defines the `triggers` option, an extra event will be triggered (this event is the value of *triggers*). 
+Also, if your transition defines the `triggers` option, for example `{triggers: 'showItAll'}`, an extra event *'showItAll'* will be triggered when that transition is crossed :
+
+```javascript
+
+    element.bind('showItAll', function(){
+        // do stuff
+    });
+```
 
 
 StatefulView
