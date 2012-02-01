@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <script type="text/javascript" src="../dependencies/jquery.min.js"></script>
+        <script type="text/javascript" src="../dependencies/underscore.min.js"></script>
+        <script type="text/javascript" src="../dependencies/backbone.js"></script>
+        <script type="text/javascript" src="../backbone.statemachine.js"></script>
+        <link rel="stylesheet" type="text/css" href="examples.css" />
+    </head>
+    <body>
+        <script>
+            $(function(){
+                var element = {el: $('#myElement')};
+                _.extend(element, Backbone.StateMachine, Backbone.Events, {
+                    states: {
+                        visible: {enterCb: ['doShow'], leaveCb: ['doHide']},
+                        hidden: {},
+                    },
+                    transitions: {
+                        visible: {
+                            hide: {enterState: 'hidden'},
+                        },
+                        hidden: {
+                            show: {enterState: 'visible'}
+                        }
+                    },
+                    doShow: function() { this.el.show(); },
+                    doHide: function() { this.el.hide(); },
+                });
+                element.startStateMachine({currentState: 'visible'});
+                
+                $("#showButton").click(function(){element.receive('show')});
+                $("#hideButton").click(function(){element.receive('hide')});
+                element.bind("leaveState:hidden", function(){
+                    alert("Now showing !");
+                });
+                element.bind("enterState:hidden", function(){
+                    alert("Now hiding !");
+                });
+                
+            });
+        </script>
+        <style>
+            #myElement {
+                width: 200px;
+                height: 100px;
+                background-color: yellow;
+                margin-top: 1em;
+            }
+        </style>
+        <button id="showButton">show</button>
+        <button id="hideButton">hide</button>
+        <div id="myElement"></div>
+    </body>
+</html>
