@@ -42,23 +42,16 @@ Backbone.StateMachine = (function(Backbone, _){
             this._states[name] = data;
         },
 
-        // Triggers an event on the state machine. All arguments passed to receive
+        // Sends an event to the state machine. All arguments passed to receive
         // - except 'event' - are also passed to the callbacks.
         receive: function(event) {
             return this._receive.apply(this, [event, false].concat(_.toArray(arguments)));
         },
 
-        // Triggers an event on the state machine. If a transition occur, the state machine
-        // won't send any event.
+        // Sends an event to the state machine. If a transition actually occur, the state machine
+        // won't trigger any event.
         receiveInSilence: function(event) {
             return this._receive.apply(this, [event, true].concat(_.toArray(arguments)));
-        },
-
-        // Wraps 'receive(event)' into a callback bound to the state machine. 
-        asReceiver: function(event) {
-            return _.bind(function(){
-                return this.receive.apply(this, [event].concat(_.toArray(arguments)));
-            }, this);
         },
 
         // Forces the state machine to state 'name'. No transition will occur, but the
@@ -67,6 +60,13 @@ Backbone.StateMachine = (function(Backbone, _){
             var extraArgs = _.toArray(arguments).slice(1);
             this._callCallbacks(this._states[name].enterCb, extraArgs);
             this.currentState = name;
+        },
+
+        // Wraps 'receive(event)' into a callback bound to the state machine. 
+        asReceiver: function(event) {
+            return _.bind(function(){
+                return this.receive.apply(this, [event].concat(_.toArray(arguments)));
+            }, this);
         },
 
         // Does the actual work when receiving an event.
