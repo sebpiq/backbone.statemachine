@@ -6,7 +6,6 @@
 // Documentation and Full License Available at:
 // https://github.com/sebpiq/backbone.statemachine
 
-// TODO: name clash : state machine event/view event/Events event
 
 Backbone.StateMachine = (function(Backbone, _){
 

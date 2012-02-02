@@ -71,9 +71,9 @@ Also, in order to actually show or hide the element, everytime the state machine
     element.startStateMachine({currentState: 'visible'});
 
     element.currentState;                // 'visible'
-    element.receive('hide');             // a transition is triggered, and an alert should open
+    element.receive('hide');             // a transition is triggered, the element should disappear
     element.currentState;                // 'hidden'
-    element.receive('hide');             // no transition is defined
+    element.receive('hide');             // event 'hide' while in state 'hidden' -> no transition
     element.receive('show', 'quick');    // extra arguments will be passed to the callbacks
 ```
 
