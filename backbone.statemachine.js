@@ -1,6 +1,6 @@
 // Backbone.StateMachine v0.1
 //
-// Copyright (C)2011 Sébastien Piquemal, Aidbrella
+// Copyright (C)2012 Sébastien Piquemal, Aidbrella
 // Distributed Under MIT License
 //
 // Documentation and Full License Available at:
@@ -16,6 +16,9 @@ Backbone.StateMachine = (function(Backbone, _){
 
         currentState: undefined,
 
+        // If `silent` is true, the state machine doesn't send events during a transition.        
+        silent: false,
+
         // Initializes the state machine : binds states, transitions, ...
         startStateMachine: function(options){
             this._transitions = {};
@@ -25,6 +28,7 @@ Backbone.StateMachine = (function(Backbone, _){
             this._bindTransitions();
             options.currentState && (this.currentState = options.currentState);
             if (options.debugStateMachine == true) DebugView.register(this);
+            this.bind('all', this._receive, this);
         },
 
         // Declares a new transition on the state machine.
@@ -39,18 +43,6 @@ Backbone.StateMachine = (function(Backbone, _){
         // Declares a new state on the state machine
         state: function(name, data) {
             this._states[name] = data;
-        },
-
-        // Sends an event to the state machine. All arguments passed to receive
-        // - except 'event' - are also passed to the callbacks.
-        receive: function(event) {
-            return this._receive.apply(this, [event, false].concat(_.toArray(arguments)));
-        },
-
-        // Sends an event to the state machine. If a transition actually occur, the state machine
-        // won't trigger any event.
-        receiveInSilence: function(event) {
-            return this._receive.apply(this, [event, true].concat(_.toArray(arguments)));
         },
 
         // Forces the state machine to state 'name'. No transition will occur, but the
@@ -69,30 +61,29 @@ Backbone.StateMachine = (function(Backbone, _){
         },
 
         // Does the actual work when receiving an event.
-        _receive: function(event, silent) {
-            if (!(this.currentState in this._transitions)) return false;
-            if (!(event in this._transitions[this.currentState])) return false;
+        _receive: function(event) {
+            if (!(this.currentState in this._transitions)) return;
+            if (!(event in this._transitions[this.currentState])) return;
             var data = this._transitions[this.currentState][event];
-            var extraArgs = _.toArray(arguments).slice(3);
-            return this._doTransition.apply(this, [data, event, silent].concat(extraArgs));
+            var extraArgs = _.toArray(arguments).slice(1);
+            this._doTransition.apply(this, [data, event].concat(extraArgs));
         },
 
         // Executes a transition.
-        _doTransition: function(data, event, silent) {
-            var extraArgs = _.toArray(arguments).slice(3);
+        _doTransition: function(data, event) {
+            var extraArgs = _.toArray(arguments).slice(2);
             var leaveState = this.currentState;
             var enterState = data.enterState;
             var triggers = data.triggers;
-            if (silent == false) this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
+            if (!this.silent) this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
             this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
-            if (silent == false) {
+            if (!this.silent) {
                 this.trigger.apply(this, ['transition', leaveState, enterState].concat(extraArgs));
                 if (triggers) this.trigger.apply(this, [triggers].concat(extraArgs));
             }
             this._callCallbacks(data.callbacks, extraArgs);
-            if (silent == false) this.trigger.apply(this, ['enterState:' + enterState].concat(extraArgs));
+            if (!this.silent) this.trigger.apply(this, ['enterState:' + enterState].concat(extraArgs));
             this.toState.apply(this, [enterState].concat(extraArgs));
-            return true;
         },
 
         // Creates transitions from `this.transitions`, which is a hash 
