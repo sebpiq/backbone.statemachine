@@ -62,8 +62,8 @@ Backbone.StateMachine = (function(Backbone, _){
 
         // Does the actual work when receiving an event.
         _receive: function(event) {
-            if (!(this.currentState in this._transitions)) return;
-            if (!(event in this._transitions[this.currentState])) return;
+            if (!this._transitions.hasOwnProperty(this.currentState)) return;
+            if (!this._transitions[this.currentState].hasOwnProperty(event)) return;
             var data = this._transitions[this.currentState][event];
             var extraArgs = _.toArray(arguments).slice(1);
             this._doTransition.apply(this, [data, event].concat(extraArgs));
@@ -260,11 +260,6 @@ Backbone.StatefulView = (function(Backbone, _){
     };
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
-
-        // TODO: tests
-        viewEventReceiver: function(event) {
-            this.receive(event.type);
-        },
 
         toState: function(name) {
             Backbone.StateMachine.toState.apply(this, arguments);
