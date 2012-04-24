@@ -58,7 +58,6 @@
                 },
                 testCb: function(){
                     this.eventsData.push(_.toArray(arguments));
-                    this.cbData = [];
                 },
                 cbData: [],
                 eventsData: []
@@ -171,14 +170,14 @@
                 statefulView.testSetUp('hidden');
                 statefulView.trigger('show');
                 equal(statefulView.currentState, 'visible');
-                equal(statefulView.el.attr('class'), 'visible');
+                equal($(statefulView.el).attr('class'), 'visible');
             });
 
             test('StatefulView - transition css class provided', function () {
                 statefulView.testSetUp('visible');
                 statefulView.trigger('hide');
                 equal(statefulView.currentState, 'hidden');
-                equal(statefulView.el.attr('class'), 'hiddenBehindTree');
+                equal($(statefulView.el).attr('class'), 'hiddenBehindTree');
             });
 
         });
