@@ -278,7 +278,7 @@ Backbone.StatefulView = (function(Backbone, _){
             var events;
             if (events = this['events']) {
                 events = _.isFunction(events) ? events() : events;
-            } else events = {};
+            } else events = this.events = {};
             var eventCb = events[event];
             if (eventCb) {
                 if (!_.isFunction(eventCb)) eventCb = this[events[event]];
