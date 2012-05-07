@@ -254,6 +254,13 @@ Backbone.StatefulView = (function(Backbone, _){
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
+        startStateMachine: function() {
+            // Remembers the events registered using `transition`, so that 
+            // they are not bound twice.
+            this._eventRegistry = [];
+            Backbone.StateMachine.startStateMachine.apply(this, arguments);
+        },
+
         toState: function(name) {
             Backbone.StateMachine.toState.apply(this, arguments);
             if (this.el) {
@@ -278,14 +285,17 @@ Backbone.StatefulView = (function(Backbone, _){
                 if (!eventCb) throw new Error('Method "' + events[event] + '" does not exist');
             }
 
+            if (this._eventRegistry.indexOf(event) == -1) {
             // Use view's `delegateEvents` to connect the DOM event with state machine.
-            var newEventCb = _.bind(function(DOMEvent) {
-                if (eventCb) eventCb.apply(this, arguments);
-                this._receive(event);
-                if (data.preventDefault) DOMEvent.preventDefault();
-            }, this);
-            events[event] = newEventCb;
-            this.delegateEvents(events);
+                var newEventCb = _.bind(function(DOMEvent) {
+                    if (eventCb) eventCb.apply(this, arguments);
+                    this._receive(event);
+                    if (data.preventDefault) DOMEvent.preventDefault();
+                }, this);
+                events[event] = newEventCb;
+                this.delegateEvents(events);
+                this._eventRegistry.push(event);
+            }
             Backbone.StateMachine.transition.apply(this, arguments);
         }
 

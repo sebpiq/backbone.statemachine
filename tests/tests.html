@@ -145,11 +145,13 @@
             var TestStatefulView = Backbone.StatefulView.extend({
                 transitions: {
                     'hidden': {
-                        'show': {enterState: 'visible'}
+                        'show': {enterState: 'visible'},
+                        'click .clickable': {enterState: 'visible'}
                     },
                     'visible': {
                         'hide': {enterState: 'hidden'},
-                        'click .clickable': {enterState: 'hidden'}
+                        'click .clickable': {enterState: 'hidden'},
+                        'click .clickable2': {enterState: 'hidden'}
                     },
                 },
                 states: {
@@ -167,7 +169,7 @@
                     this.clicked = true;
                 }
             });
-            var el = $('<div><span class="clickable"></span></div>');
+            var el = $('<div><span class="clickable"></span><span class="clickable2"></span></div>');
             var statefulView = new TestStatefulView({
                 currentState: 'hidden',
                 el: el
@@ -189,14 +191,24 @@
 
             test('StatefulView - trigger DOM events', function () {
                 statefulView.testSetUp('hidden');
-                $('.clickable', statefulView.el).trigger('click');
-                equal(statefulView.currentState, 'hidden');
-                equal(statefulView.clicked, true);
 
-                $('.clickable', statefulView.el).trigger('show');
+                // simple test
+                $('.clickable2', statefulView.el).trigger('click');
+                equal(statefulView.currentState, 'hidden');
+
+                $('.clickable2', statefulView.el).trigger('show');
                 equal(statefulView.currentState, 'visible');
 
+                $('.clickable2', statefulView.el).trigger('click');
+                equal(statefulView.currentState, 'hidden');
+
+                // test with events that occur in several transitions
+                // and with DOM events.
                 $('.clickable', statefulView.el).trigger('click');
+                equal(statefulView.currentState, 'visible');
+                equal(statefulView.clicked, true);
+
+                $('.clickable', statefulView.el).trigger('hide');
                 equal(statefulView.currentState, 'hidden');
             });
 
