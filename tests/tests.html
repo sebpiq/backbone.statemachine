@@ -46,7 +46,6 @@
                 enterHidden1: function() {this._saveCb('enterHidden1', arguments)},
                 _saveCb: function(name, args) {
                     this.cbData.push([name].concat(_.toArray(args)));
-                    console.log(JSON.stringify(this.cbData));
                 },
                 testSetUp: function(initState, connect) {
                     this.unbind(null, this.testCb);
@@ -149,7 +148,8 @@
                         'show': {enterState: 'visible'}
                     },
                     'visible': {
-                        'hide': {enterState: 'hidden'}
+                        'hide': {enterState: 'hidden'},
+                        'click .clickable': {enterState: 'hidden'}
                     },
                 },
                 states: {
@@ -160,10 +160,10 @@
                     this.currentState = currentState;
                 }
             });
-            var el = $('<div>');
+            var el = $('<div><span class="clickable"></span></div>');
             var statefulView = new TestStatefulView({
                 currentState: 'hidden',
-                el: el,
+                el: el
             });
 
             test('StatefulView - transition css class auto', function () {
@@ -178,6 +178,12 @@
                 statefulView.trigger('hide');
                 equal(statefulView.currentState, 'hidden');
                 equal($(statefulView.el).attr('class'), 'hiddenBehindTree');
+            });
+
+            test('StatefulView - trigger DOM events', function () {
+                statefulView.testSetUp('visible');
+                $('.clickable', statefulView.el).trigger('click');
+                equal(statefulView.currentState, 'hidden');
             });
 
         });

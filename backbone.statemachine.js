@@ -53,14 +53,7 @@ Backbone.StateMachine = (function(Backbone, _){
             this.currentState = name;
         },
 
-        // Wraps 'receive(event)' into a callback bound to the state machine. 
-        asReceiver: function(event) {
-            return _.bind(function(){
-                return this.receive.apply(this, [event].concat(_.toArray(arguments)));
-            }, this);
-        },
-
-        // Does the actual work when receiving an event.
+        // Callback bound to all events. Does the actual work when receiving an event.
         _receive: function(event) {
             if (!this._transitions.hasOwnProperty(this.currentState)) return;
             if (!this._transitions[this.currentState].hasOwnProperty(event)) return;
@@ -126,7 +119,7 @@ Backbone.StateMachine = (function(Backbone, _){
             }
         },
 
-        // Convenience method for collecting callbacks provided as strings.   
+        // Helper for collecting callbacks provided as strings.   
         _collectMethods : function(methodNames) {
             methods = [];
             for (var i = 0; i < methodNames.length; i++){
@@ -137,7 +130,7 @@ Backbone.StateMachine = (function(Backbone, _){
             return methods;
         },
 
-        // Convenience method for calling a list of callbacks.
+        // Helper for calling a list of callbacks.
         _callCallbacks : function(cbArray, extraArgs) {
             for (var i = 0; i < cbArray.length; i++){
                 cbArray[i].apply(this, extraArgs);
@@ -244,7 +237,7 @@ Backbone.StateMachine = (function(Backbone, _){
         collapsed: false
     });
 
-    StateMachine.version = '0.1.0';
+    StateMachine.version = '0.2';
 
     return StateMachine;
 
@@ -269,6 +262,24 @@ Backbone.StatefulView = (function(Backbone, _){
                 $(this.el).addClass(this.stateClassName);
             }
         },
+
+        // TODO: improve this implementation
+        transition: function(leaveState, event, data) {
+            var events;
+            if (events = this['events']) {
+                events = _.isFunction(events) ? events() : events;
+            } else events = {};
+            var eventCb = events[event];
+
+            var newEventCb = _.bind(function() {
+                if (eventCb) eventCb.apply(this, arguments);
+                this._doTransition(data, event);
+            }, this);
+
+            events[event] = newEventCb;
+            this.delegateEvents(events);
+            Backbone.StateMachine.transition.apply(this, arguments);
+        }
 
     });
 
