@@ -1,5 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-                    "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
     <head>
         <script type="text/javascript" src="../dependencies/jquery.min.js"></script>
@@ -14,24 +13,27 @@
                 var element = {el: $('#myElement')};
                 _.extend(element, Backbone.StateMachine, Backbone.Events, {
                     states: {
-                        visible: {enterCb: ['doShow'], leaveCb: ['doHide']},
-                        hidden: {},
+                        'visible': {enterCb: ['doShow'], leaveCb: ['doHide']},
+                        'hidden': {},
                     },
                     transitions: {
-                        visible: {
-                            hide: {enterState: 'hidden'},
+                        'visible': {
+                            'hide': {enterState: 'hidden'},
                         },
-                        hidden: {
-                            show: {enterState: 'visible'}
+                        'hidden': {
+                            'show': {enterState: 'visible'}
                         }
                     },
                     doShow: function() { this.el.show(); },
                     doHide: function() { this.el.hide(); },
                 });
-                element.startStateMachine({currentState: 'visible'});
+                element.startStateMachine({
+                    currentState: 'visible',
+                    debugStateMachine: true
+                });
                 
-                $("#showButton").click(function(){element.receive('show')});
-                $("#hideButton").click(function(){element.receive('hide')});
+                $("#showButton").click(function(){element.trigger('show')});
+                $("#hideButton").click(function(){element.trigger('hide')});
                 element.bind("leaveState:hidden", function(){
                     alert("Now showing !");
                 });

@@ -8,7 +8,7 @@ Index
 -------
     
 - ``Backbone.StateMachine``. A module that can be mixed into any object, giving this object the super-powers of a state machine.
-- ``Backbone.StatefulView``. A Backbone view, augmented with state machine capacities. 
+- ``Backbone.StatefulView``. A Backbone view, augmented with state machine capabilities. 
 
 
 StateMachine
@@ -106,6 +106,8 @@ Also, if your transition defines the `triggers` option, for example `{triggers: 
         // do stuff
     });
 ```
+
+**TODO** : document `silent` attribute of the state machine.
 
 
 StatefulView
