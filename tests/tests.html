@@ -188,10 +188,16 @@
             });
 
             test('StatefulView - trigger DOM events', function () {
-                statefulView.testSetUp('visible');
+                statefulView.testSetUp('hidden');
                 $('.clickable', statefulView.el).trigger('click');
                 equal(statefulView.currentState, 'hidden');
                 equal(statefulView.clicked, true);
+
+                $('.clickable', statefulView.el).trigger('show');
+                equal(statefulView.currentState, 'visible');
+
+                $('.clickable', statefulView.el).trigger('click');
+                equal(statefulView.currentState, 'hidden');
             });
 
         });

@@ -264,6 +264,8 @@ Backbone.StatefulView = (function(Backbone, _){
         },
 
         // TODO: improve this implementation
+        // maybe extra options in `transitions`
+        // maybe pass initial DOMEvent as extra arguments to transition callbacks
         transition: function(leaveState, event, data) {
             // Get the callback declared in view's `events`.
             var events;
@@ -279,7 +281,8 @@ Backbone.StatefulView = (function(Backbone, _){
             // Use view's `delegateEvents` to connect the DOM event with state machine.
             var newEventCb = _.bind(function(DOMEvent) {
                 if (eventCb) eventCb.apply(this, arguments);
-                this._doTransition(data, DOMEvent);
+                this._receive(event);
+                if (data.preventDefault) DOMEvent.preventDefault();
             }, this);
             events[event] = newEventCb;
             this.delegateEvents(events);

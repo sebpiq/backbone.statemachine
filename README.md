@@ -107,6 +107,8 @@ Also, if your transition defines the `triggers` option, for example `{triggers: 
     });
 ```
 
+**TODO** : document `silent` attribute of the state machine.
+
 
 StatefulView
 ----------------
@@ -116,6 +118,10 @@ A very simple example for ``Backbone.StatefulView`` is provided in the *examples
 **state options**
 
 - `className` - a css class added to view's `el` when the view is this in state.
+
+**transition options**
+
+- `preventDefault` - if the event triggering the transition is a DOM event, `event.preventDefault()` will be called on it.
 
 
 Requirements
