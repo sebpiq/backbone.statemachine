@@ -156,8 +156,15 @@
                     'hidden': {className: 'hiddenBehindTree'},
                     'visible': {}
                 },
+                events: {
+                    'click .clickable': 'clickedCb'
+                },
                 testSetUp: function(currentState) {
                     this.currentState = currentState;
+                    this.clicked = false;
+                },
+                clickedCb: function() {
+                    this.clicked = true;
                 }
             });
             var el = $('<div><span class="clickable"></span></div>');
@@ -184,6 +191,7 @@
                 statefulView.testSetUp('visible');
                 $('.clickable', statefulView.el).trigger('click');
                 equal(statefulView.currentState, 'hidden');
+                equal(statefulView.clicked, true);
             });
 
         });

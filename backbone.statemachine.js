@@ -271,11 +271,15 @@ Backbone.StatefulView = (function(Backbone, _){
                 events = _.isFunction(events) ? events() : events;
             } else events = {};
             var eventCb = events[event];
+            if (eventCb) {
+                if (!_.isFunction(eventCb)) eventCb = this[events[event]];
+                if (!eventCb) throw new Error('Method "' + events[event] + '" does not exist');
+            }
 
             // Use view's `delegateEvents` to connect the DOM event with state machine.
-            var newEventCb = _.bind(function() {
+            var newEventCb = _.bind(function(DOMEvent) {
                 if (eventCb) eventCb.apply(this, arguments);
-                this._doTransition(data, event);
+                this._doTransition(data, DOMEvent);
             }, this);
             events[event] = newEventCb;
             this.delegateEvents(events);
