@@ -71,10 +71,10 @@ Also, in order to actually show or hide the element, everytime the state machine
     element.startStateMachine({currentState: 'visible'});
 
     element.currentState;                // 'visible'
-    element.receive('hide');             // a transition is triggered, the element should disappear
+    element.trigger('hide');             // a transition is triggered, the element should disappear
     element.currentState;                // 'hidden'
-    element.receive('hide');             // event 'hide' while in state 'hidden' -> no transition
-    element.receive('show', 'quick');    // extra arguments will be passed to the callbacks
+    element.trigger('hide');             // event 'hide' while in state 'hidden' -> no transition
+    element.trigger('show', 'quick');    // extra arguments will be passed to the callbacks
 ```
 
 
@@ -84,17 +84,17 @@ Every time a transition is crossed, the state machine triggers a bunch of Backbo
 
 ```javascript
 
-    element.bind('transition', function(leaveState, enterState){
+    element.bind('transition', function(leaveState, enterState) {
         alert('Transition from state "'+leaveState+'" to state "'+enterState+'"');
     });
-    element.bind('leaveState:hidden', function(){
+    element.bind('leaveState:hidden', function() {
         // synchronize other objects in your application
-        bla.receive('activate');
+        bla.trigger('activate');
         aView.render();
     });
-    element.bind('enterState:hidden', function(){
+    element.bind('enterState:hidden', function() {
         // synchronize other objects in your application
-        bla.receive('deactivate');
+        bla.trigger('deactivate');
     });
 ```
 
@@ -102,22 +102,68 @@ Also, if your transition defines the `triggers` option, for example `{triggers: 
 
 ```javascript
 
-    element.bind('showItAll', function(){
+    element.bind('showItAll', function() {
         // do stuff
     });
 ```
 
-**TODO** : document `silent` attribute of the state machine.
+If you want to hush-up the state machine, and prevent any of those events to be triggered, just set `silent` to `true` :
+
+```javascript
+
+    element.silent = true;      // next transitions will happen in silence
+    element.trigger('show');
+    element.trigger('hide');
+    element.silent = false;     // next transitions will trigger events as described above
+```
 
 
 StatefulView
 ----------------
 
-A very simple example for ``Backbone.StatefulView`` is provided in the *examples* folder.
+`Backbone.StatefulView` is a backbone view that has state machine capabilities, plus a few goodies.
+
+
+### A css class for each state ################
+
+To each state of the machine corresponds a css class on the view's `el`. By default the css class name is the state.
+
+This makes styling very easy, for example :
+
+```css
+
+    #myStatefulView.visible {
+        display: block;
+    }
+    #myStatefulView.hidden {
+        display: none;
+    }
+```
+
+
+### Transition events as view events ################
+
+It is possible to declare transition events exactly the same way as in the `Backbone.View.events` hash. For example :
+
+```javascript
+
+    var MyView = Backbone.StatefulView.extend({
+        states: {
+            'idle': {},
+            'active': {},
+        },
+        transitions: {
+            'idle': {
+                'click .activate': {enterState: 'active'}   // transition will occur when clicking on '.activate'
+            }
+        }
+    });
+```
+
 
 **state options**
 
-- `className` - a css class added to view's `el` when the view is this in state.
+- `className` - a css class added to view's `el` when the view is in this state.
 
 
 Requirements
