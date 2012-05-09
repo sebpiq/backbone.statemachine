@@ -53,6 +53,14 @@ Backbone.StateMachine = (function(Backbone, _){
             this.currentState = name;
         },
 
+        // Returns the list of all events that can trigger a transition
+        getEvents: function() {
+            var events = _.reduce(_.values(this._transitions), function(memo, transitions) {
+                return memo.concat(_.keys(transitions));
+            }, []);
+            return _.uniq(events);
+        },
+
         // Callback bound to all events. Does the actual work when receiving an event.
         _receive: function(event) {
             if (!this._transitions.hasOwnProperty(this.currentState)) return;
@@ -90,7 +98,7 @@ Backbone.StateMachine = (function(Backbone, _){
         //          }
         //      }
         // Transitions are created by calling the `transition` method.
-        _bindTransitions : function() {
+        _bindTransitions: function() {
             if (!this.transitions) return;
             for (var leaveState in this.transitions) {
                 for (var event in this.transitions[leaveState]) {
@@ -109,7 +117,7 @@ Backbone.StateMachine = (function(Backbone, _){
         //          }
         //      }
         // States are created by calling the `state` method.
-        _bindStates : function() {
+        _bindStates: function() {
             if (!this.states) return;
             for (var name in this.states) {
                 var data = _.clone(this.states[name]);
@@ -120,7 +128,7 @@ Backbone.StateMachine = (function(Backbone, _){
         },
 
         // Helper for collecting callbacks provided as strings.   
-        _collectMethods : function(methodNames) {
+        _collectMethods: function(methodNames) {
             methods = [];
             for (var i = 0; i < methodNames.length; i++){
                 var method = this[methodNames[i]];
@@ -131,14 +139,11 @@ Backbone.StateMachine = (function(Backbone, _){
         },
 
         // Helper for calling a list of callbacks.
-        _callCallbacks : function(cbArray, extraArgs) {
+        _callCallbacks: function(cbArray, extraArgs) {
             for (var i = 0; i < cbArray.length; i++){
                 cbArray[i].apply(this, extraArgs);
             }
         }
-
-
-
     };
 
     // View for a state machine in the debugger.
@@ -248,8 +253,8 @@ Backbone.StateMachine = (function(Backbone, _){
 Backbone.StatefulView = (function(Backbone, _){
 
     var StatefulView = function(options) {
-        Backbone.View.prototype.constructor.apply(this, arguments);
         this.startStateMachine(options);
+        Backbone.View.prototype.constructor.apply(this, arguments);
     };
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
@@ -271,32 +276,22 @@ Backbone.StatefulView = (function(Backbone, _){
         },
 
         // TODO: improve this implementation
-        transition: function(leaveState, event, data) {
-            // Get the callback declared in view's `events`.
-            var events;
-            if (events = this['events']) {
-                events = _.isFunction(events) ? events() : events;
-            } else events = this.events = {};
-            var eventCb = events[event];
-            if (eventCb) {
-                if (!_.isFunction(eventCb)) eventCb = this[events[event]];
-                if (!eventCb) throw new Error('Method "' + events[event] + '" does not exist');
-            }
-
-            if (this._eventRegistry.indexOf(event) == -1) {
-            // Use view's `delegateEvents` to connect the DOM event with state machine.
-                var newEventCb = _.bind(function(DOMEvent) {
-                    if (eventCb) eventCb.apply(this, arguments);
-                    this._receive(event, DOMEvent);
-                    if (data.preventDefault) DOMEvent.preventDefault();
+        
+        delegateEvents: function(events) {
+            if (!events) {
+                var transEvents = {};
+                _.each(this.getEvents(), function(event) {
+                    // non need to bind the callback, Backbone does it.
+                    transEvents[event] = function(DOMEvent) {
+                        console.log(this, DOMEvent);
+                        this._receive(event, DOMEvent);
+                    };
                 }, this);
-                events[event] = newEventCb;
-                this.delegateEvents(events);
-                this._eventRegistry.push(event);
+                console.log('delegateEv', transEvents, this.getEvents());
+                Backbone.View.prototype.delegateEvents.call(this, transEvents);
             }
-            Backbone.StateMachine.transition.apply(this, arguments);
+            Backbone.View.prototype.delegateEvents.call(this, events);
         }
-
     });
 
     // Set up inheritance for StatefulView.

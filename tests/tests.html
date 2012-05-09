@@ -64,6 +64,10 @@
 
             stateMachine.startStateMachine({currentState: 'hidden'});
 
+            test('StateMachine - getEvents', function () {
+                deepEqual(stateMachine.getEvents(), ['hide', 'show']);
+            });
+
             test('StateMachine - transition events and arguments', function () {
                 stateMachine.testSetUp('visible', true);
                 stateMachine.trigger('hide', 'behind a tree');
