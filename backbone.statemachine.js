@@ -276,7 +276,6 @@ Backbone.StatefulView = (function(Backbone, _){
         },
 
         // TODO: improve this implementation
-        
         delegateEvents: function(events) {
             if (!events) {
                 var transEvents = {};
