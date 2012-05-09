@@ -1,5 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-                    "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
     <head>
         <script type="text/javascript" src="../dependencies/jquery.min.js"></script>
@@ -24,16 +23,13 @@
                             'saved': {enterState: 'ready'}
                         }
                     },
-                    events: {
-                        'click': 'viewEventReceiver'
-                    },
                     enterSavingCb: function(){
-                        this.el.attr({'disabled': 'disabled'});
-                        this.el.html('Saving ...');
+                        $(this.el).attr({'disabled': 'disabled'});
+                        $(this.el).html('Saving ...');
                     },
                     leaveSavingCb: function(){
-                        this.el.removeAttr('disabled');
-                        this.el.html('Save');
+                        $(this.el).removeAttr('disabled');
+                        $(this.el).html('Save');
                     }
                 });
 
@@ -44,7 +40,7 @@
                 });
 
                 myButtonView.bind('enterState:saving', function(){
-                    setTimeout(function(){myButtonView.receive('saved')}, 3000);
+                    setTimeout(function(){myButtonView.trigger('saved')}, 3000);
                 });
             });
         </script>

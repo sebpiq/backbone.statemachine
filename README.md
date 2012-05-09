@@ -8,7 +8,7 @@ Index
 -------
     
 - ``Backbone.StateMachine``. A module that can be mixed into any object, giving this object the super-powers of a state machine.
-- ``Backbone.StatefulView``. A Backbone view, augmented with state machine capacities. 
+- ``Backbone.StatefulView``. A Backbone view, augmented with state machine capabilities. 
 
 
 StateMachine
@@ -118,10 +118,6 @@ A very simple example for ``Backbone.StatefulView`` is provided in the *examples
 **state options**
 
 - `className` - a css class added to view's `el` when the view is this in state.
-
-**transition options**
-
-- `preventDefault` - if the event triggering the transition is a DOM event, `event.preventDefault()` will be called on it.
 
 
 Requirements

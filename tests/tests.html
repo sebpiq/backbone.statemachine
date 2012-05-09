@@ -151,7 +151,7 @@
                     'visible': {
                         'hide': {enterState: 'hidden'},
                         'click .clickable': {enterState: 'hidden'},
-                        'click .clickable2': {enterState: 'hidden'}
+                        'click .clickable2': {enterState: 'hidden', callbacks: ['visibleToHiddenCb']}
                     },
                 },
                 states: {
@@ -164,6 +164,10 @@
                 testSetUp: function(currentState) {
                     this.currentState = currentState;
                     this.clicked = false;
+                    this.clickEvent = null;
+                },
+                visibleToHiddenCb: function(event) {
+                    this.clickEvent = event;
                 },
                 clickedCb: function() {
                     this.clicked = true;
@@ -201,6 +205,7 @@
 
                 $('.clickable2', statefulView.el).trigger('click');
                 equal(statefulView.currentState, 'hidden');
+                equal(statefulView.clickEvent.type, 'click');
 
                 // test with events that occur in several transitions
                 // and with DOM events.
