@@ -215,6 +215,7 @@
                 // and with DOM events.
                 $('.clickable', statefulView.el).trigger('click');
                 equal(statefulView.currentState, 'visible');
+                // Test that standard View.events callbacks are still called
                 equal(statefulView.clicked, true);
 
                 $('.clickable', statefulView.el).trigger('hide');

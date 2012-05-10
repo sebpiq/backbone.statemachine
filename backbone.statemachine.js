@@ -27,7 +27,7 @@ Backbone.StateMachine = (function(Backbone, _){
             this._bindStates();
             this._bindTransitions();
             options.currentState && (this.currentState = options.currentState);
-            if (options.debugStateMachine == true) DebugView.register(this);
+            if (options.debugStateMachine === true) DebugView.register(this);
             this.bind('all', this._receive, this);
         },
 
@@ -275,19 +275,27 @@ Backbone.StatefulView = (function(Backbone, _){
             }
         },
 
-        // TODO: improve this implementation
         delegateEvents: function(events) {
+            // We want all the events in the `transitions` hash to be triggered
+            // like events in `View.events`. 
             if (!events) {
-                var transEvents = {};
+                events = (this['events'] && _.clone(this['events'])) || {};
+                if (events && _.isFunction(events)) events = events();
                 _.each(this.getEvents(), function(event) {
-                    // non need to bind the callback, Backbone does it.
-                    transEvents[event] = function(DOMEvent) {
-                        console.log(this, DOMEvent);
-                        this._receive(event, DOMEvent);
-                    };
+                    // If there was already a callback for that event, 
+                    // we must call it ourselves ... sigh ...
+                    var method = events[event];
+                    if (method != undefined) {
+                        if (!_.isFunction(method)) method = this[events[event]];
+                        if (!method) throw new Error('Method "' + events[event] + '" does not exist');
+                    }
+                    events[event] = (function(method) {
+                        return function(DOMEvent) {
+                            if (method) method.apply(this, arguments);
+                            this._receive(event, DOMEvent);
+                        };
+                    })(method);
                 }, this);
-                console.log('delegateEv', transEvents, this.getEvents());
-                Backbone.View.prototype.delegateEvents.call(this, transEvents);
             }
             Backbone.View.prototype.delegateEvents.call(this, events);
         }
