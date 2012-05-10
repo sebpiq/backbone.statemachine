@@ -240,7 +240,7 @@ Backbone.StateMachine = (function(Backbone, _){
         collapsed: false
     });
 
-    StateMachine.version = '0.2';
+    StateMachine.version = '0.2.1';
 
     return StateMachine;
 
