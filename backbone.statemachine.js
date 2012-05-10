@@ -33,15 +33,20 @@ Backbone.StateMachine = (function(Backbone, _){
 
         // Declares a new transition on the state machine.
         transition: function(leaveState, event, data) {
-            if (!(data.enterState in this._states)) {
-                throw Error('unknown state "' + data.enterState + '"');
-            }
-            if (!(leaveState in this._transitions)) this._transitions[leaveState] = {};
+            data = _.clone(data);
+            if (!(this._states.hasOwnProperty(data.enterState))) 
+                this.state(data.enterState, {});
+            if (!(this._transitions.hasOwnProperty(leaveState)))
+                this._transitions[leaveState] = {};
+            data.callbacks = this._collectMethods((data.callbacks || []));
             this._transitions[leaveState][event] = data;
         },
 
         // Declares a new state on the state machine
         state: function(name, data) {
+            data = _.clone(data);
+            data.enterCb = this._collectMethods((data.enterCb || []));
+            data.leaveCb = this._collectMethods((data.leaveCb || []));
             this._states[name] = data;
         },
 
@@ -102,9 +107,7 @@ Backbone.StateMachine = (function(Backbone, _){
             if (!this.transitions) return;
             for (var leaveState in this.transitions) {
                 for (var event in this.transitions[leaveState]) {
-                    var data = _.clone(this.transitions[leaveState][event]);
-                    data.callbacks = this._collectMethods((data.callbacks || []));
-                    this.transition(leaveState, event, data);
+                    this.transition(leaveState, event, this.transitions[leaveState][event]);
                 }
             }
         },
@@ -119,12 +122,7 @@ Backbone.StateMachine = (function(Backbone, _){
         // States are created by calling the `state` method.
         _bindStates: function() {
             if (!this.states) return;
-            for (var name in this.states) {
-                var data = _.clone(this.states[name]);
-                data.enterCb = this._collectMethods((data.enterCb || []));
-                data.leaveCb = this._collectMethods((data.leaveCb || []));
-                this.state(name, data);
-            }
+            for (var name in this.states) this.state(name, this.states[name]);
         },
 
         // Helper for collecting callbacks provided as strings.   
@@ -169,7 +167,7 @@ Backbone.StateMachine = (function(Backbone, _){
                 $(this.el).append(innerHtml);
                 // when the debug view is hovered, if the state machine it represents is a view
                 // itself, we highlight its element on the page.
-                if ('el' in this.model) {
+                if (this.model.hasOwnProperty('el')) {
                     $(this.el).hover(_.bind(function(){
                         var modelEl = $(this.model.el);
                         this.cssMem = {'background-color': '', 'border': ''}

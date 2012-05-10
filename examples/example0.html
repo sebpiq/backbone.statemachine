@@ -13,8 +13,7 @@
                 var element = {el: $('#myElement')};
                 _.extend(element, Backbone.StateMachine, Backbone.Events, {
                     states: {
-                        'visible': {enterCb: ['doShow'], leaveCb: ['doHide']},
-                        'hidden': {},
+                        'visible': {enterCb: ['doShow'], leaveCb: ['doHide']}
                     },
                     transitions: {
                         'visible': {

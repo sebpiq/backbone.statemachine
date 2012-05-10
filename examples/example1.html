@@ -12,8 +12,7 @@
             $(function(){
                 var ButtonView = Backbone.StatefulView.extend({
                     states: {
-                        'saving': {enterCb: ['enterSavingCb'], leaveCb: ['leaveSavingCb']},
-                        'ready': {},
+                        'saving': {enterCb: ['enterSavingCb'], leaveCb: ['leaveSavingCb']}
                     },
                     transitions: {
                         'ready': {
