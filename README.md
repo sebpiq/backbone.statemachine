@@ -36,11 +36,11 @@ var element = {el: $('#myElement')};
 _.extend(element, Backbone.StateMachine, Backbone.Events, {
     states: {
         visible: {enterCb: ['doShow'], leaveCb: ['doHide']},  // All options see: 'state options'
-        hidden: {},
+        hidden: {}                                            // Declaring this is optional
     },
     transitions: {
         visible: {
-            hide: {enterState: 'hidden'},                     // All options see: 'transition options'
+            hide: {enterState: 'hidden'}                      // All options see: 'transition options'
         },
         hidden: {
             show: {enterState: 'visible'}
@@ -116,8 +116,6 @@ element.trigger('show');
 element.trigger('hide');
 element.silent = false;     // next transitions will trigger events as described above
 ```
-
-**TODO** : document `silent` attribute of the state machine.
 
 
 StatefulView
