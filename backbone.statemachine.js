@@ -127,7 +127,7 @@ Backbone.StateMachine = (function(Backbone, _){
 
         // Helper for collecting callbacks provided as strings.   
         _collectMethods: function(methodNames) {
-            methods = [];
+            var methods = [];
             for (var i = 0; i < methodNames.length; i++){
                 var method = this[methodNames[i]];
                 if (!method) throw new Error('Method "' + methodNames[i] + '" does not exist');
