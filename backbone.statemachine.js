@@ -1,10 +1,10 @@
-// Backbone.StateMachine v0.2.1
-//
-// Copyright (C)2012 Sébastien Piquemal, Aidbrella
-// Distributed Under MIT License
-//
-// Documentation and Full License Available at:
-// https://github.com/sebpiq/backbone.statemachine
+/*
+ * backbone.statemachine
+ * https://github.com/sebpiq/backbone.statemachine
+ *
+ * Copyright (c) 2012 Sébastien Piquemal, Aidbrella.
+ * Licensed under the MIT license.
+ */
 
 
 Backbone.StateMachine = (function(Backbone, _){
