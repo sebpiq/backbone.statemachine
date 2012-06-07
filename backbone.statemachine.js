@@ -1,4 +1,4 @@
-// Backbone.StateMachine v0.1
+// Backbone.StateMachine v0.2.1
 //
 // Copyright (C)2012 Sébastien Piquemal, Aidbrella
 // Distributed Under MIT License
@@ -28,7 +28,7 @@ Backbone.StateMachine = (function(Backbone, _){
             this._bindTransitions();
             options.currentState && (this.currentState = options.currentState);
             if (options.debugStateMachine === true) DebugView.register(this);
-            this.bind('all', this._receive, this);
+            this.bind('all', this._onMachineEvent, this);
         },
 
         // Declares a new transition on the state machine.
@@ -59,28 +59,31 @@ Backbone.StateMachine = (function(Backbone, _){
         },
 
         // Returns the list of all events that can trigger a transition
-        getEvents: function() {
+        getMachineEvents: function() {
             var events = _.reduce(_.values(this._transitions), function(memo, transitions) {
                 return memo.concat(_.keys(transitions));
             }, []);
             return _.uniq(events);
         },
 
-        // Callback bound to all events. Does the actual work when receiving an event.
-        _receive: function(event) {
+        // Callback bound to all events. If no transition available, do nothing.
+        // Otherwise, starts the transition.
+        _onMachineEvent: function(event) {
             if (!this._transitions.hasOwnProperty(this.currentState)) return;
             if (!this._transitions[this.currentState].hasOwnProperty(event)) return;
-            var data = this._transitions[this.currentState][event];
-            var extraArgs = _.toArray(arguments).slice(1);
+
+            var data = this._transitions[this.currentState][event],
+                extraArgs = _.toArray(arguments).slice(1);
             this._doTransition.apply(this, [data, event].concat(extraArgs));
         },
 
         // Executes a transition.
         _doTransition: function(data, event) {
-            var extraArgs = _.toArray(arguments).slice(2);
-            var leaveState = this.currentState;
-            var enterState = data.enterState;
-            var triggers = data.triggers;
+            var extraArgs = _.toArray(arguments).slice(2),
+                leaveState = this.currentState,
+                enterState = data.enterState,
+                triggers = data.triggers;
+
             if (!this.silent) this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
             this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
             if (!this.silent) {
@@ -92,44 +95,34 @@ Backbone.StateMachine = (function(Backbone, _){
             this.toState.apply(this, [enterState].concat(extraArgs));
         },
 
-        // Creates transitions from `this.transitions`, which is a hash 
-        //      {   
-        //          leaveStateName: {
-        //              event: {
-        //                  enterState: 'enterStateName',
-        //                  triggers: 'eventName',
-        //                  callbacks: [callback1, callback2, ...]
-        //              }
-        //          }
-        //      }
-        // Transitions are created by calling the `transition` method.
+        // Declares transitions from `this.transitions`, which is a hash : 
+        //  { leaveState: { event: data, ... }, ... }
         _bindTransitions: function() {
             if (!this.transitions) return;
-            for (var leaveState in this.transitions) {
-                for (var event in this.transitions[leaveState]) {
-                    this.transition(leaveState, event, this.transitions[leaveState][event]);
+
+            var leaveState, event, transitions = this.transitions;
+            for (leaveState in transitions) {
+                for (event in transitions[leaveState]) {
+                    this.transition(leaveState, event, transitions[leaveState][event]);
                 }
             }
         },
 
-        // Creates states from `this.states`, which is a hash 
-        //      {   
-        //          stateName: {
-        //              className: 'cssClass',
-        //              enterCb: [enterCb1, enterCb2, ...], leaveCb: [leaveCb1, leaveCb2, ...]
-        //          }
-        //      }
-        // States are created by calling the `state` method.
+        // Declare states from `this.states`, which is a hash :
+        // { stateName: data, ... }
         _bindStates: function() {
             if (!this.states) return;
-            for (var name in this.states) this.state(name, this.states[name]);
+
+            var name, states = this.states;
+            for (name in states) this.state(name, states[name]);
         },
 
         // Helper for collecting callbacks provided as strings.   
         _collectMethods: function(methodNames) {
-            var methods = [];
-            for (var i = 0; i < methodNames.length; i++){
-                var method = this[methodNames[i]];
+            var methods = [], i, length, method;
+
+            for (i = 0, length = methodNames.length; i < length; i++){
+                method = this[methodNames[i]];
                 if (!method) throw new Error('Method "' + methodNames[i] + '" does not exist');
                 methods.push(method);
             }
@@ -138,7 +131,9 @@ Backbone.StateMachine = (function(Backbone, _){
 
         // Helper for calling a list of callbacks.
         _callCallbacks: function(cbArray, extraArgs) {
-            for (var i = 0; i < cbArray.length; i++){
+            var i, length;
+
+            for (i = 0, length = cbArray.length; i < length; i++){
                 cbArray[i].apply(this, extraArgs);
             }
         }
@@ -257,13 +252,6 @@ Backbone.StatefulView = (function(Backbone, _){
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
-        startStateMachine: function() {
-            // Remembers the events registered using `transition`, so that 
-            // they are not bound twice.
-            this._eventRegistry = [];
-            Backbone.StateMachine.startStateMachine.apply(this, arguments);
-        },
-
         toState: function(name) {
             Backbone.StateMachine.toState.apply(this, arguments);
             if (this.el) {
@@ -279,20 +267,19 @@ Backbone.StatefulView = (function(Backbone, _){
             if (!events) {
                 events = (this['events'] && _.clone(this['events'])) || {};
                 if (events && _.isFunction(events)) events = events();
-                _.each(this.getEvents(), function(event) {
+
+                _.each(this.getMachineEvents(), function(event) {
                     // If there was already a callback for that event, 
-                    // we must call it ourselves ... sigh ...
+                    // we must fetch it, and call it ourselves ... sigh ...
                     var method = events[event];
-                    if (method != undefined) {
+                    if (method) {
                         if (!_.isFunction(method)) method = this[events[event]];
                         if (!method) throw new Error('Method "' + events[event] + '" does not exist');
                     }
-                    events[event] = (function(method) {
-                        return function(DOMEvent) {
-                            if (method) method.apply(this, arguments);
-                            this._receive(event, DOMEvent);
-                        };
-                    })(method);
+                    events[event] = function(DOMEvent) {
+                        if (method) method.apply(this, arguments);
+                        this._onMachineEvent(event, DOMEvent);
+                    };
                 }, this);
             }
             Backbone.View.prototype.delegateEvents.call(this, events);

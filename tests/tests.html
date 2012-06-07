@@ -64,8 +64,8 @@
 
             stateMachine.startStateMachine({currentState: 'hidden'});
 
-            test('StateMachine - getEvents', function () {
-                deepEqual(stateMachine.getEvents(), ['hide', 'show']);
+            test('StateMachine - getMachineEvents', function () {
+                deepEqual(stateMachine.getMachineEvents(), ['hide', 'show']);
             });
 
             test('StateMachine - transition events and arguments', function () {
