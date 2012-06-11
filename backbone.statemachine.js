@@ -34,6 +34,8 @@ Backbone.StateMachine = (function(Backbone, _){
         // Declares a new transition on the state machine.
         transition: function(leaveState, event, data) {
             data = _.clone(data);
+            if (!(this._states.hasOwnProperty(leaveState))) 
+                this.state(leaveState, {});
             if (!(this._states.hasOwnProperty(data.enterState))) 
                 this.state(data.enterState, {});
             if (!(this._transitions.hasOwnProperty(leaveState)))
