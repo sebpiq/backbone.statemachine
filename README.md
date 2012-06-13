@@ -166,10 +166,6 @@ It is possible to declare transition events exactly the same way as in the `Back
 ```javascript
 
 var MyView = Backbone.StatefulView.extend({
-    states: {
-        'idle': {},
-        'active': {},
-    },
     transitions: {
         'idle': {
             'click .activate': {enterState: 'active'}   // transition will occur when clicking on '.activate'
