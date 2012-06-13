@@ -62,22 +62,6 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 - `callbacks` - array containing names of methods to call when transition is crossed _(Optional)_.
 - `triggers` - Backbone event to trigger when transition is crossed _(Optional)_. 
 
-### Matching any state with '*' ###########
-
-When declaring the transitions of your state machine, you can use the wildcard character `'*'` to match any state.
-
-```javascript
-
-var obj = {};
-_.extend(obj, Backbone.StateMachine, Backbone.Events, {
-    transitions: {
-        visible: { hide: {enterState: 'hidden'} },
-        hidden: { show: {enterState: 'visible'} },
-        // No matter the machine's state, 'panic' will always trigger a transition :
-        '*': { panic: {enterState: 'panicking'} }
-    }
-});
-```
 
 ### Triggering transitions ###########
 
@@ -131,6 +115,24 @@ element.silent = true;      // next transitions will happen in silence
 element.trigger('show');
 element.trigger('hide');
 element.silent = false;     // next transitions will trigger events as described above
+```
+
+
+### Matching any state with '*' ###########
+
+When declaring the transitions of your state machine, you can use the wildcard character `'*'` to match any state.
+
+```javascript
+
+var obj = {};
+_.extend(obj, Backbone.StateMachine, Backbone.Events, {
+    transitions: {
+        visible: { hide: {enterState: 'hidden'} },
+        hidden: { show: {enterState: 'visible'} },
+        // No matter the machine's state, 'panic' will always trigger a transition :
+        '*': { panic: {enterState: 'panicking'} }
+    }
+});
 ```
 
 
