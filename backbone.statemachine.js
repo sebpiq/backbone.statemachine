@@ -9,6 +9,8 @@
 
 Backbone.StateMachine = (function(Backbone, _){
 
+    // This is a key that means 'any state'. 
+    var ANY_STATE = '*';
 
     // Mixin object to create a state machine out of any other object.
     // Note that this requires to be mixed-in with Backbone.Event as well. 
@@ -27,18 +29,18 @@ Backbone.StateMachine = (function(Backbone, _){
             this._bindStates();
             this._bindTransitions();
             options.currentState && (this.currentState = options.currentState);
-            if (options.debugStateMachine === true) DebugView.register(this);
+            if (options.debugStateMachine === true) StateMachine.DebugView.register(this);
             this.bind('all', this._onMachineEvent, this);
         },
 
         // Declares a new transition on the state machine.
         transition: function(leaveState, event, data) {
             data = _.clone(data);
-            if (!(this._states.hasOwnProperty(leaveState))) 
+            if (leaveState != ANY_STATE && !this._states.hasOwnProperty(leaveState))
                 this.state(leaveState, {});
-            if (!(this._states.hasOwnProperty(data.enterState))) 
+            if (!this._states.hasOwnProperty(data.enterState)) 
                 this.state(data.enterState, {});
-            if (!(this._transitions.hasOwnProperty(leaveState)))
+            if (!this._transitions.hasOwnProperty(leaveState))
                 this._transitions[leaveState] = {};
             data.callbacks = this._collectMethods((data.callbacks || []));
             this._transitions[leaveState][event] = data;
@@ -46,6 +48,8 @@ Backbone.StateMachine = (function(Backbone, _){
 
         // Declares a new state on the state machine
         state: function(name, data) {
+            if (name == ANY_STATE) 
+                throw new Error('state name "' + ANY_STATE + '" is forbidden');
             data = _.clone(data);
             data.enterCb = this._collectMethods((data.enterCb || []));
             data.leaveCb = this._collectMethods((data.leaveCb || []));
@@ -71,11 +75,16 @@ Backbone.StateMachine = (function(Backbone, _){
         // Callback bound to all events. If no transition available, do nothing.
         // Otherwise, starts the transition.
         _onMachineEvent: function(event) {
-            if (!this._transitions.hasOwnProperty(this.currentState)) return;
-            if (!this._transitions[this.currentState].hasOwnProperty(event)) return;
+            var data, extraArgs, transitions = this._transitions;
+            if (transitions.hasOwnProperty((key = this.currentState)) && 
+                transitions[key].hasOwnProperty(event))
+                data = transitions[key][event];
+            else if (transitions.hasOwnProperty(ANY_STATE) &&
+                transitions[ANY_STATE].hasOwnProperty(event)) 
+                data = transitions[ANY_STATE][event];
+            else return;
 
-            var data = this._transitions[this.currentState][event],
-                extraArgs = _.toArray(arguments).slice(1);
+            extraArgs = _.toArray(arguments).slice(1);
             this._doTransition.apply(this, [data, event].concat(extraArgs));
         },
 
@@ -141,8 +150,67 @@ Backbone.StateMachine = (function(Backbone, _){
         }
     };
 
-    // View for a state machine in the debugger.
-    var DebugView = Backbone.View.extend({
+    StateMachine.version = '0.2.2';
+
+    return StateMachine;
+
+})(Backbone, _);
+
+
+// A Backbone view that is also a state machine.
+Backbone.StatefulView = (function(Backbone, _){
+
+    var StatefulView = function(options) {
+        this.startStateMachine(options);
+        Backbone.View.prototype.constructor.apply(this, arguments);
+    };
+
+    _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
+
+        toState: function(name) {
+            Backbone.StateMachine.toState.apply(this, arguments);
+            if (this.el) {
+                $(this.el).removeClass((this.stateClassName || ''));
+                this.stateClassName = (this._states[name].className || name);
+                $(this.el).addClass(this.stateClassName);
+            }
+        },
+
+        delegateEvents: function(events) {
+            // We want all the events in the `transitions` hash to be triggered
+            // like events in `View.events`. 
+            if (!events) {
+                events = (this['events'] && _.clone(this['events'])) || {};
+                if (events && _.isFunction(events)) events = events();
+
+                _.each(this.getMachineEvents(), function(event) {
+                    // If there was already a callback for that event, 
+                    // we must fetch it, and call it ourselves ... sigh ...
+                    var method = events[event];
+                    if (method) {
+                        if (!_.isFunction(method)) method = this[events[event]];
+                        if (!method) throw new Error('Method "' + events[event] + '" does not exist');
+                    }
+                    events[event] = function(DOMEvent) {
+                        if (method) method.apply(this, arguments);
+                        this._onMachineEvent(event, DOMEvent);
+                    };
+                }, this);
+            }
+            Backbone.View.prototype.delegateEvents.call(this, events);
+        }
+    });
+
+    // Set up inheritance for StatefulView.
+    StatefulView.extend = Backbone.View.extend;
+
+    return StatefulView;
+})(Backbone, _);
+
+
+// State machine debugger.
+(function(Backbone, _){
+    Backbone.StateMachine.DebugView = Backbone.View.extend({
         tagName: 'div',
         className: 'backbone-statemachine-debug',
         rendered: false,
@@ -217,7 +285,7 @@ Backbone.StateMachine = (function(Backbone, _){
                 });
             }
             // create the debug view, pick a random color for it, and add it to the debugger.
-            var debugView = new DebugView({model: instance});
+            var debugView = new this({model: instance});
             var bgColor = this.pickColor();
             $(debugView.el).appendTo(this.el).css({'background-color': bgColor});
             debugView.render();
@@ -236,61 +304,4 @@ Backbone.StateMachine = (function(Backbone, _){
         el: undefined,
         collapsed: false
     });
-
-    StateMachine.version = '0.2.1';
-
-    return StateMachine;
-
 })(Backbone, _);
-
-
-// A Backbone view that is also a state machine.
-Backbone.StatefulView = (function(Backbone, _){
-
-    var StatefulView = function(options) {
-        this.startStateMachine(options);
-        Backbone.View.prototype.constructor.apply(this, arguments);
-    };
-
-    _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
-
-        toState: function(name) {
-            Backbone.StateMachine.toState.apply(this, arguments);
-            if (this.el) {
-                $(this.el).removeClass((this.stateClassName || ''));
-                this.stateClassName = (this._states[name].className || name);
-                $(this.el).addClass(this.stateClassName);
-            }
-        },
-
-        delegateEvents: function(events) {
-            // We want all the events in the `transitions` hash to be triggered
-            // like events in `View.events`. 
-            if (!events) {
-                events = (this['events'] && _.clone(this['events'])) || {};
-                if (events && _.isFunction(events)) events = events();
-
-                _.each(this.getMachineEvents(), function(event) {
-                    // If there was already a callback for that event, 
-                    // we must fetch it, and call it ourselves ... sigh ...
-                    var method = events[event];
-                    if (method) {
-                        if (!_.isFunction(method)) method = this[events[event]];
-                        if (!method) throw new Error('Method "' + events[event] + '" does not exist');
-                    }
-                    events[event] = function(DOMEvent) {
-                        if (method) method.apply(this, arguments);
-                        this._onMachineEvent(event, DOMEvent);
-                    };
-                }, this);
-            }
-            Backbone.View.prototype.delegateEvents.call(this, events);
-        }
-    });
-
-    // Set up inheritance for StatefulView.
-    StatefulView.extend = Backbone.View.extend;
-
-    return StatefulView;
-})(Backbone, _);
-

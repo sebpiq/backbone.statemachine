@@ -47,7 +47,7 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
         }
     },
     doShow: function() { this.el.show(); },
-    doHide: function() { this.el.hide(); },
+    doHide: function() { this.el.hide(); }
 });
 ```
 
@@ -62,6 +62,22 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 - `callbacks` - array containing names of methods to call when transition is crossed _(Optional)_.
 - `triggers` - Backbone event to trigger when transition is crossed _(Optional)_. 
 
+### Matching any state with '*' ###########
+
+When declaring the transitions of your state machine, you can use the wildcard character `'*'` to match any state.
+
+```javascript
+
+var obj = {};
+_.extend(obj, Backbone.StateMachine, Backbone.Events, {
+    transitions: {
+        visible: { hide: {enterState: 'hidden'} },
+        hidden: { show: {enterState: 'visible'} },
+        // No matter the machine's state, 'panic' will always trigger a transition :
+        '*': { panic: {enterState: 'panicking'} }
+    }
+});
+```
 
 ### Triggering transitions ###########
 
@@ -192,6 +208,11 @@ http://upload.wikimedia.org/wikipedia/commons/c/cf/Finite_state_machine_example_
 
 Release History
 ================
+
+0.2.2
+------
+
+- added the wilcard characted '*' to match any state. 
 
 0.2.1
 ------

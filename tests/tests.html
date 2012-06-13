@@ -29,6 +29,9 @@
                             callbacks: ['hiddenToVisible1', 'hiddenToVisible2'],
                             triggers: 'showTime'
                         }
+                    },
+                    '*': {
+                        'panic': {enterState: 'panicking'}
                     }
                 },
                 states: {
@@ -65,7 +68,7 @@
             stateMachine.startStateMachine({currentState: 'hidden'});
 
             test('StateMachine - getMachineEvents', function () {
-                deepEqual(stateMachine.getMachineEvents(), ['hide', 'show']);
+                deepEqual(stateMachine.getMachineEvents(), ['hide', 'show', 'panic']);
             });
 
             test('StateMachine - transition events and arguments', function () {
@@ -104,6 +107,12 @@
                     ['visibleToHidden2', 'under your bed'],
                     ['enterHidden1', 'under your bed'],
                 ]);
+            });
+
+            test('StateMachine - declaring transition with a wildcard', function () {
+                stateMachine.testSetUp('visible');
+                stateMachine.trigger('panic');
+                equal(stateMachine.currentState, 'panicking');
             });
 
             test('StateMachine - toState', function () {
