@@ -60,8 +60,8 @@ Backbone.StateMachine = (function(Backbone, _){
         // normal "enter new state" mess will (calling the callbacks, ...).
         toState: function(name) {
             var extraArgs = _.toArray(arguments).slice(1);
-            this._callCallbacks(this._states[name].enterCb, extraArgs);
             this.currentState = name;
+            this._callCallbacks(this._states[name].enterCb, extraArgs);
         },
 
         // Returns the list of all events that can trigger a transition
