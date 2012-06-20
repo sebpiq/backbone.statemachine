@@ -58,6 +58,7 @@ Backbone.StateMachine = (function(Backbone, _){
         // Forces the state machine to state 'name'. No transition will occur, but the
         // normal "enter new state" mess will (calling the callbacks, ...).
         toState: function(name) {
+            if (!this._states.hasOwnProperty(name)) throw new Error('unknown state "'+name+'"');
             var extraArgs = _.toArray(arguments).slice(1);
             this.currentState = name;
             this._callCallbacks(this._states[name].enterCb, extraArgs);
