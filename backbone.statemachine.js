@@ -22,13 +22,12 @@ Backbone.StateMachine = (function(Backbone, _){
         silent: false,
 
         // Initializes the state machine : binds states, transitions, ...
-        startStateMachine: function(options){
+        startStateMachine: function(options) {
             this._transitions = {};
             this._states = {};
             options || (options = {});
             this._bindStates();
             this._bindTransitions();
-            options.currentState && (this.currentState = options.currentState);
             if (options.debugStateMachine === true) StateMachine.DebugView.register(this);
             this.bind('all', this._onMachineEvent, this);
         },
