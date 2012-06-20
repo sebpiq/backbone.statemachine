@@ -164,6 +164,8 @@ Backbone.StatefulView = (function(Backbone, _){
         this.startStateMachine(options);
         Backbone.View.prototype.constructor.apply(this, arguments);
     };
+    // Fix instanceof for StatefulView
+    StatefulView.prototype = new Backbone.View;
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
@@ -208,7 +210,7 @@ Backbone.StatefulView = (function(Backbone, _){
 })(Backbone, _);
 
 
-// State machine debugger.
+// State machine debugger (ugh :-S).
 (function(Backbone, _){
     Backbone.StateMachine.DebugView = Backbone.View.extend({
         tagName: 'div',
