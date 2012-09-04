@@ -2,54 +2,60 @@
  * backbone.statemachine
  * https://github.com/sebpiq/backbone.statemachine
  *
- * Copyright (c) 2012 Sébastien Piquemal, Aidbrella.
+ * Copyright (c) 2012 SÃ©bastien Piquemal, Aidbrella.
  * Licensed under the MIT license.
  */
 
 
-Backbone.StateMachine = (function(Backbone, _){
+Backbone.StateMachine = (function(Backbone, _) {
 
-    // This is a key that means 'any state'. 
+    // This is a key that means 'any state'.
     var ANY_STATE = '*';
 
     // Mixin object to create a state machine out of any other object.
-    // Note that this requires to be mixed-in with Backbone.Event as well. 
+    // Note that this requires to be mixed-in with Backbone.Event as well.
     var StateMachine = {
 
         currentState: undefined,
 
-        // If `silent` is true, the state machine doesn't send events during a transition.        
+        // If `silent` is true, the state machine doesn't send events during a transition.
         silent: false,
 
         // Initializes the state machine : binds states, transitions, ...
-        startStateMachine: function(options){
+        startStateMachine: function(options) {
             this._transitions = {};
             this._states = {};
-            options || (options = {});
+            options = options || {};
             this._bindStates();
             this._bindTransitions();
             options.currentState && (this.currentState = options.currentState);
-            if (options.debugStateMachine === true) StateMachine.DebugView.register(this);
+            if (options.debugStateMachine === true) {
+              StateMachine.DebugView.register(this);
+            }
             this.bind('all', this._onMachineEvent, this);
         },
 
         // Declares a new transition on the state machine.
         transition: function(leaveState, event, data) {
             data = _.clone(data);
-            if (leaveState != ANY_STATE && !this._states.hasOwnProperty(leaveState))
+            if (leaveState !== ANY_STATE && !this._states.hasOwnProperty(leaveState)) {
                 this.state(leaveState, {});
-            if (!this._states.hasOwnProperty(data.enterState)) 
+            }
+            if (!this._states.hasOwnProperty(data.enterState))  {
                 this.state(data.enterState, {});
-            if (!this._transitions.hasOwnProperty(leaveState))
+            }
+            if (!this._transitions.hasOwnProperty(leaveState)) {
                 this._transitions[leaveState] = {};
+            }
             data.callbacks = this._collectMethods((data.callbacks || []));
             this._transitions[leaveState][event] = data;
         },
 
         // Declares a new state on the state machine
         state: function(name, data) {
-            if (name == ANY_STATE) 
-                throw new Error('state name "' + ANY_STATE + '" is forbidden');
+            if (name === ANY_STATE) {
+              throw new Error('state name "' + ANY_STATE + '" is forbidden');
+            }
             data = _.clone(data);
             data.enterCb = this._collectMethods((data.enterCb || []));
             data.leaveCb = this._collectMethods((data.leaveCb || []));
@@ -76,13 +82,15 @@ Backbone.StateMachine = (function(Backbone, _){
         // Otherwise, starts the transition.
         _onMachineEvent: function(event) {
             var data, extraArgs, transitions = this._transitions;
-            if (transitions.hasOwnProperty((key = this.currentState)) && 
-                transitions[key].hasOwnProperty(event))
+            if (transitions.hasOwnProperty((key = this.currentState)) &&
+                transitions[key].hasOwnProperty(event)) {
                 data = transitions[key][event];
-            else if (transitions.hasOwnProperty(ANY_STATE) &&
-                transitions[ANY_STATE].hasOwnProperty(event)) 
+            } else if (transitions.hasOwnProperty(ANY_STATE) &&
+                transitions[ANY_STATE].hasOwnProperty(event)) {
                 data = transitions[ANY_STATE][event];
-            else return;
+            } else {
+              return;
+            }
 
             extraArgs = _.toArray(arguments).slice(1);
             this._doTransition.apply(this, [data, event].concat(extraArgs));
@@ -95,21 +103,29 @@ Backbone.StateMachine = (function(Backbone, _){
                 enterState = data.enterState,
                 triggers = data.triggers;
 
-            if (!this.silent) this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
+            if (!this.silent) {
+              this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
+            }
             this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
             if (!this.silent) {
                 this.trigger.apply(this, ['transition', leaveState, enterState].concat(extraArgs));
-                if (triggers) this.trigger.apply(this, [triggers].concat(extraArgs));
+                if (triggers) {
+                  this.trigger.apply(this, [triggers].concat(extraArgs));
+                }
             }
             this._callCallbacks(data.callbacks, extraArgs);
-            if (!this.silent) this.trigger.apply(this, ['enterState:' + enterState].concat(extraArgs));
+            if (!this.silent) {
+              this.trigger.apply(this, ['enterState:' + enterState].concat(extraArgs));
+            }
             this.toState.apply(this, [enterState].concat(extraArgs));
         },
 
-        // Declares transitions from `this.transitions`, which is a hash : 
+        // Declares transitions from `this.transitions`, which is a hash :
         //  { leaveState: { event: data, ... }, ... }
         _bindTransitions: function() {
-            if (!this.transitions) return;
+            if (!this.transitions) {
+              return;
+            }
 
             var leaveState, event, transitions = this.transitions;
             for (leaveState in transitions) {
@@ -122,19 +138,25 @@ Backbone.StateMachine = (function(Backbone, _){
         // Declare states from `this.states`, which is a hash :
         // { stateName: data, ... }
         _bindStates: function() {
-            if (!this.states) return;
+            if (!this.states) {
+              return;
+            }
 
             var name, states = this.states;
-            for (name in states) this.state(name, states[name]);
+            for (name in states) {
+              this.state(name, states[name]);
+            }
         },
 
-        // Helper for collecting callbacks provided as strings.   
+        // Helper for collecting callbacks provided as strings.
         _collectMethods: function(methodNames) {
             var methods = [], i, length, method;
 
             for (i = 0, length = methodNames.length; i < length; i++){
                 method = this[methodNames[i]];
-                if (!method) throw new Error('Method "' + methodNames[i] + '" does not exist');
+                if (!method) {
+                  throw new Error('Method "' + methodNames[i] + '" does not exist');
+                }
                 methods.push(method);
             }
             return methods;
@@ -178,21 +200,29 @@ Backbone.StatefulView = (function(Backbone, _){
 
         delegateEvents: function(events) {
             // We want all the events in the `transitions` hash to be triggered
-            // like events in `View.events`. 
+            // like events in `View.events`.
             if (!events) {
-                events = (this['events'] && _.clone(this['events'])) || {};
-                if (events && _.isFunction(events)) events = events();
+                events = (this.events && _.clone(this.events)) || {};
+                if (events && _.isFunction(events)) {
+                  events = events();
+                }
 
                 _.each(this.getMachineEvents(), function(event) {
-                    // If there was already a callback for that event, 
+                    // If there was already a callback for that event,
                     // we must fetch it, and call it ourselves ... sigh ...
                     var method = events[event];
                     if (method) {
-                        if (!_.isFunction(method)) method = this[events[event]];
-                        if (!method) throw new Error('Method "' + events[event] + '" does not exist');
+                        if (!_.isFunction(method)) {
+                          method = this.events[event];
+                        }
+                        if (!method) {
+                          throw new Error('Method "' + events[event] + '" does not exist');
+                        }
                     }
                     events[event] = function(DOMEvent) {
-                        if (method) method.apply(this, arguments);
+                        if (method) {
+                          method.apply(this, arguments);
+                        }
                         this._onMachineEvent(event, DOMEvent);
                     };
                 }, this);
@@ -220,7 +250,7 @@ Backbone.StatefulView = (function(Backbone, _){
         render: function() {
             // This is only called when rendering the first time.
             if (!this.rendered) {
-                // sets-up periodic rendering, so the debug view is always up-to-date. 
+                // sets-up periodic rendering, so the debug view is always up-to-date.
                 function periodicRender() {
                     this.render();
                     setTimeout(_.bind(periodicRender, this), 100);
@@ -235,7 +265,7 @@ Backbone.StatefulView = (function(Backbone, _){
                 if (this.model.hasOwnProperty('el')) {
                     $(this.el).hover(_.bind(function(){
                         var modelEl = $(this.model.el);
-                        this.cssMem = {'background-color': '', 'border': ''}
+                        this.cssMem = {'background-color': '', 'border': ''};
                         modelEl.css({'background-color': 'blue','border': '3px solid DarkBlue'});
                     }, this));
                     $(this.el).mouseleave(_.bind(function(){
@@ -257,7 +287,7 @@ Backbone.StatefulView = (function(Backbone, _){
         register: function(instance) {
             // If this is the first state machine registered in the debugger,
             // we create the debugger's html.
-            if (this.viewsArray.length == 0) {
+            if (this.viewsArray.length === 0) {
                 var container = this.el = $('<div id="backbone-statemachine-debug-container">'+
                     '<h3>backbone.statemachine: DEBUGGER</h3>'+
                     '<a id="backbone-statemachine-debug-hideshow">hide</a>'+
@@ -289,7 +319,9 @@ Backbone.StatefulView = (function(Backbone, _){
             var bgColor = this.pickColor();
             $(debugView.el).appendTo(this.el).css({'background-color': bgColor});
             debugView.render();
-            if (this.collapsed) $(debugView.el).hide();
+            if (this.collapsed) {
+              $(debugView.el).hide();
+            }
             this.viewsArray.push(debugView);
         },
         update: function() {
