@@ -53,7 +53,7 @@ Backbone.StateMachine = (function(Backbone, _) {
         // Declares a new state on the state machine
         state: function(name, data) {
             if (name === ANY_STATE) {
-              throw new Error('state name "' + ANY_STATE + '" is forbidden');
+                throw new Error('state name "' + ANY_STATE + '" is forbidden');
             }
             data = _.clone(data);
             data.enterCb = this._collectMethods((data.enterCb || []));
@@ -89,7 +89,7 @@ Backbone.StateMachine = (function(Backbone, _) {
                 transitions[ANY_STATE].hasOwnProperty(event)) {
                 data = transitions[ANY_STATE][event];
             } else {
-              return;
+                return;
             }
 
             extraArgs = _.toArray(arguments).slice(1);
@@ -104,7 +104,7 @@ Backbone.StateMachine = (function(Backbone, _) {
                 triggers = data.triggers;
 
             if (!this.silent) {
-              this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
+                this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
             }
             this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
             if (!this.silent) {
@@ -115,7 +115,7 @@ Backbone.StateMachine = (function(Backbone, _) {
             }
             this._callCallbacks(data.callbacks, extraArgs);
             if (!this.silent) {
-              this.trigger.apply(this, ['enterState:' + enterState].concat(extraArgs));
+                this.trigger.apply(this, ['enterState:' + enterState].concat(extraArgs));
             }
             this.toState.apply(this, [enterState].concat(extraArgs));
         },
@@ -124,7 +124,7 @@ Backbone.StateMachine = (function(Backbone, _) {
         //  { leaveState: { event: data, ... }, ... }
         _bindTransitions: function() {
             if (!this.transitions) {
-              return;
+                return;
             }
 
             var leaveState, event, transitions = this.transitions;
@@ -139,12 +139,12 @@ Backbone.StateMachine = (function(Backbone, _) {
         // { stateName: data, ... }
         _bindStates: function() {
             if (!this.states) {
-              return;
+                return;
             }
 
             var name, states = this.states;
             for (name in states) {
-              this.state(name, states[name]);
+                this.state(name, states[name]);
             }
         },
 
@@ -219,7 +219,7 @@ Backbone.StatefulView = (function(Backbone, _){
                     var method = events[event];
                     if (method) {
                         if (!_.isFunction(method)) {
-                            method = this.events[event];
+                            method = this[method];
                         }
                         if (!method) {
                             throw new Error('Method "' + events[event] + '" does not exist');
@@ -326,7 +326,7 @@ Backbone.StatefulView = (function(Backbone, _){
             $(debugView.el).appendTo(this.el).css({'background-color': bgColor});
             debugView.render();
             if (this.collapsed) {
-              $(debugView.el).hide();
+                $(debugView.el).hide();
             }
             this.viewsArray.push(debugView);
         },
