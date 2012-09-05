@@ -68,7 +68,10 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 ```javascript
 
 // !!! this method needs to be called before the state machine can be used
-element.startStateMachine({currentState: 'visible'});
+element.startStateMachine();
+
+// !!! For now, you also need to force it to its initial state manually
+element.toState('visible');
 
 element.currentState;                // 'visible'
 element.trigger('hide');             // a transition is triggered, the element should disappear
@@ -136,6 +139,17 @@ _.extend(obj, Backbone.StateMachine, Backbone.Events, {
 ```
 
 
+### Forcing the machine to a given state ###########
+
+You can use the method `toState` to force the machine to a particular state. In that case, no transition will occur, but the `enterCb` callbacks will be executed.
+
+```javascript
+element.currentState;       // 'hidden'
+element.toState('visible'); // the callback 'doShow' is executed.
+element.currentState;       // 'visible'
+```
+
+
 StatefulView
 ----------------
 
@@ -170,6 +184,10 @@ var MyView = Backbone.StatefulView.extend({
         'idle': {
             'click .activate': {enterState: 'active'}   // transition will occur when clicking on '.activate'
         }
+    },
+
+    initialize: function(opts) {
+        this.toState('idle');                           // you need to set manually the initial state
     }
 });
 ```
@@ -210,7 +228,7 @@ Release History
 0.2.2
 ------
 
-- added the wilcard characted '*' to match any state. 
+- added the wilcard characted '*' to match any state.
 
 0.2.1
 ------

@@ -12,7 +12,7 @@
     <script>
         $(document).ready(function(){
 
-            module('StateMachine');
+        module('StateMachine');
 
             var stateMachine = {};
             _.extend(stateMachine, Backbone.StateMachine, Backbone.Events, {
@@ -153,7 +153,7 @@
             var eventSender = {};
             _.extend(eventSender, Backbone.Events);
 
-            module('StatefulView');
+        module('StatefulView');
             
             var TestStatefulView = Backbone.StatefulView.extend({
                 transitions: {
@@ -189,6 +189,10 @@
             var statefulView = new TestStatefulView({
                 currentState: 'hidden',
                 el: el
+            });
+
+            test('StatefulView - instanceof', function () {
+                ok(statefulView instanceof Backbone.View);
             });
 
             test('StatefulView - transition css class auto', function () {

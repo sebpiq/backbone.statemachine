@@ -22,13 +22,12 @@ Backbone.StateMachine = (function(Backbone, _){
         silent: false,
 
         // Initializes the state machine : binds states, transitions, ...
-        startStateMachine: function(options){
+        startStateMachine: function(options) {
             this._transitions = {};
             this._states = {};
             options || (options = {});
             this._bindStates();
             this._bindTransitions();
-            options.currentState && (this.currentState = options.currentState);
             if (options.debugStateMachine === true) StateMachine.DebugView.register(this);
             this.bind('all', this._onMachineEvent, this);
         },
@@ -59,9 +58,10 @@ Backbone.StateMachine = (function(Backbone, _){
         // Forces the state machine to state 'name'. No transition will occur, but the
         // normal "enter new state" mess will (calling the callbacks, ...).
         toState: function(name) {
+            if (!this._states.hasOwnProperty(name)) throw new Error('unknown state "'+name+'"');
             var extraArgs = _.toArray(arguments).slice(1);
-            this._callCallbacks(this._states[name].enterCb, extraArgs);
             this.currentState = name;
+            this._callCallbacks(this._states[name].enterCb, extraArgs);
         },
 
         // Returns the list of all events that can trigger a transition
@@ -164,16 +164,22 @@ Backbone.StatefulView = (function(Backbone, _){
         this.startStateMachine(options);
         Backbone.View.prototype.constructor.apply(this, arguments);
     };
+    // Fix instanceof for StatefulView
+    var sfvProto = StatefulView.prototype = new Backbone.View();
+    delete sfvProto.cid;
+    delete sfvProto.options;
+    delete sfvProto.el;
+    delete sfvProto.$el;
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
         toState: function(name) {
-            Backbone.StateMachine.toState.apply(this, arguments);
             if (this.el) {
                 $(this.el).removeClass((this.stateClassName || ''));
                 this.stateClassName = (this._states[name].className || name);
                 $(this.el).addClass(this.stateClassName);
             }
+            Backbone.StateMachine.toState.apply(this, arguments);
         },
 
         delegateEvents: function(events) {
@@ -208,7 +214,7 @@ Backbone.StatefulView = (function(Backbone, _){
 })(Backbone, _);
 
 
-// State machine debugger.
+// State machine debugger (ugh :-S).
 (function(Backbone, _){
     Backbone.StateMachine.DebugView = Backbone.View.extend({
         tagName: 'div',
