@@ -35,8 +35,8 @@
                     }
                 },
                 states: {
-                    'visible': {enterCb: ['enterVisible1', 'enterVisible2'], leaveCb: ['leaveVisible1', 'leaveVisible2']},
-                    'hidden': {enterCb: ['enterHidden1']}
+                    'visible': {enter: ['enterVisible1', 'enterVisible2'], leave: ['leaveVisible1', 'leaveVisible2']},
+                    'hidden': {enter: ['enterHidden1']}
                 },
                 visibleToHidden1: function() {this._saveCb('visibleToHidden1', arguments)},
                 visibleToHidden2: function() {this._saveCb('visibleToHidden2', arguments)},

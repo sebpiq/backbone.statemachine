@@ -35,7 +35,7 @@ var element = {el: $('#myElement')};
 // !!! note that `StateMachine` requires the `Events` mixin
 _.extend(element, Backbone.StateMachine, Backbone.Events, {
     states: {
-        visible: {enterCb: ['doShow'], leaveCb: ['doHide']},  // All options see: 'state options'
+        visible: {enter: ['doShow'], leave: ['doHide']},  // All options see: 'state options'
         hidden: {}                                            // Declaring this is optional
     },
     transitions: {
@@ -53,8 +53,8 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 
 **state options**
 
-- `enterCb` - array containing names of methods to call when entering the state _(Optional)_.
-- `leaveCb` - array containing names of methods to call when leaving the state _(Optional)_.
+- `enter` - array containing names of methods to call when entering the state _(Optional)_.
+- `leave` - array containing names of methods to call when leaving the state _(Optional)_.
 
 **transition options**
 
@@ -141,7 +141,7 @@ _.extend(obj, Backbone.StateMachine, Backbone.Events, {
 
 ### Forcing the machine to a given state ###########
 
-You can use the method `toState` to force the machine to a particular state. In that case, no transition will occur, but the `enterCb` callbacks will be executed.
+You can use the method `toState` to force the machine to a particular state. In that case, no transition will occur, but the `enter` callbacks will be executed.
 
 ```javascript
 element.currentState;       // 'hidden'

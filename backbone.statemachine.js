@@ -56,8 +56,8 @@ Backbone.StateMachine = (function(Backbone, _) {
                 throw new Error('state name "' + ANY_STATE + '" is forbidden');
             }
             data = _.clone(data);
-            data.enterCb = this._collectMethods((data.enterCb || []));
-            data.leaveCb = this._collectMethods((data.leaveCb || []));
+            data.enter = this._collectMethods((data.enter || []));
+            data.leave = this._collectMethods((data.leave || []));
             this._states[name] = data;
         },
 
@@ -67,7 +67,7 @@ Backbone.StateMachine = (function(Backbone, _) {
             if (!this._states.hasOwnProperty(name)) throw new Error('unknown state "'+name+'"');
             var extraArgs = _.toArray(arguments).slice(1);
             this.currentState = name;
-            this._callCallbacks(this._states[name].enterCb, extraArgs);
+            this._callCallbacks(this._states[name].enter, extraArgs);
         },
 
         // Returns the list of all events that can trigger a transition
@@ -106,7 +106,7 @@ Backbone.StateMachine = (function(Backbone, _) {
             if (!this.silent) {
                 this.trigger.apply(this, ['leaveState:' + leaveState].concat(extraArgs));
             }
-            this._callCallbacks(this._states[leaveState].leaveCb, extraArgs);
+            this._callCallbacks(this._states[leaveState].leave, extraArgs);
             if (!this.silent) {
                 this.trigger.apply(this, ['transition', leaveState, enterState].concat(extraArgs));
                 if (triggers) {
