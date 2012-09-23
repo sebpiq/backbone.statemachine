@@ -71,7 +71,7 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 
 ### Triggering transitions ###########
 
-The state machines are always created in `init` state, even if you haven't declared it. Therefore, you should always declare at least one transition from state `init` to another state.
+The state machines are always created in `init` state, even if it isn't declared. Therefore, you should always declare at least one transition from state `init` to another state.
 
 ```javascript
 
