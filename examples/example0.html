@@ -12,9 +12,11 @@
             $(function(){
                 var element = {el: $('#myElement')};
                 _.extend(element, Backbone.StateMachine, Backbone.Events, {
+
                     states: {
-                        'visible': {enterCb: ['doShow'], leaveCb: ['doHide']}
+                        'visible': {enter: ['doShow'], leave: ['doHide']}
                     },
+
                     transitions: {
                         'visible': {
                             'hide': {enterState: 'hidden'},
@@ -23,13 +25,14 @@
                             'show': {enterState: 'visible'}
                         }
                     },
+
                     doShow: function() { this.el.show(); },
+
                     doHide: function() { this.el.hide(); },
                 });
-                element.startStateMachine({
-                    currentState: 'visible',
-                    debugStateMachine: true
-                });
+
+                element.startStateMachine({ debugStateMachine: true });
+                element.toState('visible');
                 
                 $("#showButton").click(function(){element.trigger('show')});
                 $("#hideButton").click(function(){element.trigger('hide')});
