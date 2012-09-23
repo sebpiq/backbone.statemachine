@@ -12,6 +12,9 @@ Backbone.StateMachine = (function(Backbone, _) {
     // This is a key that means 'any state'.
     var ANY_STATE = '*';
 
+    // This is the key for the initial state.
+    var INIT_STATE = 'init';
+
     // Mixin object to create a state machine out of any other object.
     // Note that this requires to be mixed-in with Backbone.Event as well.
     var StateMachine = {
@@ -32,6 +35,7 @@ Backbone.StateMachine = (function(Backbone, _) {
                 StateMachine.DebugView.register(this);
             }
             this.bind('all', this._onMachineEvent, this);
+            this.currentState = INIT_STATE;
         },
 
         // Declares a new transition on the state machine.
@@ -133,11 +137,19 @@ Backbone.StateMachine = (function(Backbone, _) {
                     this.transition(leaveState, event, transitions[leaveState][event]);
                 }
             }
+            if (!(transitions.hasOwnProperty(INIT_STATE)
+                || transitions.hasOwnProperty(ANY_STATE))) {
+                console.warn('there is no transition from state "init" to another state.');
+            }
         },
 
         // Declare states from `this.states`, which is a hash :
         // { stateName: data, ... }
+        // Also defines `init` state if not defined in the hash.
         _bindStates: function() {
+            if (!this.states.hasOwnProperty(INIT_STATE)) {
+                this.state(INIT_STATE, {});
+            }
             if (!this.states) {
                 return;
             }

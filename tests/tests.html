@@ -17,6 +17,9 @@
             var stateMachine = {};
             _.extend(stateMachine, Backbone.StateMachine, Backbone.Events, {
                 transitions: {
+                    'init': {
+                        'initialized': {enterState: 'visible'}
+                    },
                     'visible': {
                         'hide': {
                             enterState: 'hidden',
@@ -68,7 +71,7 @@
             stateMachine.startStateMachine({currentState: 'hidden'});
 
             test('StateMachine - getMachineEvents', function () {
-                deepEqual(stateMachine.getMachineEvents(), ['hide', 'show', 'panic']);
+                deepEqual(stateMachine.getMachineEvents(), ['initialized', 'hide', 'show', 'panic']);
             });
 
             test('StateMachine - transition events and arguments', function () {

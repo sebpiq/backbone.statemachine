@@ -21,8 +21,9 @@ StateMachine
 
 Let's declare a very simple state machine representing an HTML element that can be either hidden or visible.
 
-This machine will have 2 states, *hidden* and *visible*, and 2 transitions :
+This machine will have 3 states, *init*, *hidden* and *visible*, and 3 transitions :
 
+    init --['initialized']--> visible
     hidden  --['show']--> visible
     visible --['hide']--> hidden
 
@@ -35,10 +36,13 @@ var element = {el: $('#myElement')};
 // !!! note that `StateMachine` requires the `Events` mixin
 _.extend(element, Backbone.StateMachine, Backbone.Events, {
     states: {
-        visible: {enter: ['doShow'], leave: ['doHide']},  // All options see: 'state options'
+        visible: {enter: ['doShow'], leave: ['doHide']},      // All options see: 'state options'
         hidden: {}                                            // Declaring this is optional
     },
     transitions: {
+        init: {
+            initialized: {enterState: 'visible'}
+        },
         visible: {
             hide: {enterState: 'hidden'}                      // All options see: 'transition options'
         },
@@ -51,6 +55,8 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 });
 ```
 
+
+
 **state options**
 
 - `enter` - array containing names of methods to call when entering the state _(Optional)_.
@@ -60,18 +66,20 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 
 - `enterState` - arrival state of the transition.
 - `callbacks` - array containing names of methods to call when transition is crossed _(Optional)_.
-- `triggers` - Backbone event to trigger when transition is crossed _(Optional)_. 
+- `triggers` - Backbone event to trigger when transition is crossed _(Optional)_.
 
 
 ### Triggering transitions ###########
+
+The state machines are always created in `init` state, even if you haven't declared it. Therefore, you should always declare at least one transition from state `init` to another state.
 
 ```javascript
 
 // !!! this method needs to be called before the state machine can be used
 element.startStateMachine();
 
-// !!! For now, you also need to force it to its initial state manually
-element.toState('visible');
+// First, let's get the machine out from 'init' state
+element.trigger('initialized');
 
 element.currentState;                // 'visible'
 element.trigger('hide');             // a transition is triggered, the element should disappear
@@ -224,6 +232,12 @@ http://upload.wikimedia.org/wikipedia/commons/c/cf/Finite_state_machine_example_
 
 Release History
 ================
+
+0.2.3
+------
+
+- 'enterCb' and 'leaveCb' renamed to 'enter' and 'leave'
+- now machine always created in 'init' state.
 
 0.2.2
 ------

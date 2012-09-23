@@ -18,6 +18,9 @@
                     },
 
                     transitions: {
+                        'init': {
+                            'initialized': {enterState: 'visible'}
+                        },
                         'visible': {
                             'hide': {enterState: 'hidden'},
                         },
@@ -32,7 +35,7 @@
                 });
 
                 element.startStateMachine({ debugStateMachine: true });
-                element.toState('visible');
+                element.trigger('initialized');
                 
                 $("#showButton").click(function(){element.trigger('show')});
                 $("#hideButton").click(function(){element.trigger('hide')});

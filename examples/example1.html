@@ -17,6 +17,9 @@
                     },
 
                     transitions: {
+                        'init': {
+                            'initialized': {enterState: 'ready'}
+                        },
                         'ready': {
                             'click': {enterState: 'saving'}
                         },
@@ -36,7 +39,7 @@
                     },
 
                     initialize: function() {
-                        this.toState('ready');
+                        this.trigger('initialized');
                     }
                 });
 
@@ -66,7 +69,7 @@
                 color: grey;
             }
         </style>
-        <button id="saveButton" class="ready">Save</button>
+        <button id="saveButton">Save</button>
         <div class="exampleNotes">The above button is initially in <b>ready</b> state. Click on it to change its state to <b>saving</b>. A 3 seconds timeout will trigger another state change, and the button will be back to <b>ready</b> state.</div>
     </body>
 </html>
