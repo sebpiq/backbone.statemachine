@@ -12,7 +12,7 @@ $(document).ready(function(){
                     'hide': {
                         enterState: 'hidden',
                         callbacks: ['visibleToHidden1', 'visibleToHidden2']
-                    },
+                    }
                 },
                 'hidden': {
                     'show': {
@@ -29,15 +29,15 @@ $(document).ready(function(){
                 'visible': {enter: ['enterVisible1', 'enterVisible2'], leave: ['leaveVisible1', 'leaveVisible2']},
                 'hidden': {enter: ['enterHidden1']}
             },
-            visibleToHidden1: function() {this._saveCb('visibleToHidden1', arguments)},
-            visibleToHidden2: function() {this._saveCb('visibleToHidden2', arguments)},
-            hiddenToVisible1: function() {this._saveCb('hiddenToVisible1', arguments)},
-            hiddenToVisible2: function() {this._saveCb('hiddenToVisible2', arguments)},
-            enterVisible1: function() {this._saveCb('enterVisible1', arguments)},
-            enterVisible2: function() {this._saveCb('enterVisible2', arguments)},
-            leaveVisible1: function() {this._saveCb('leaveVisible1', arguments)},
-            leaveVisible2: function() {this._saveCb('leaveVisible2', arguments)},
-            enterHidden1: function() {this._saveCb('enterHidden1', arguments)},
+            visibleToHidden1: function() {this._saveCb('visibleToHidden1', arguments);},
+            visibleToHidden2: function() {this._saveCb('visibleToHidden2', arguments);},
+            hiddenToVisible1: function() {this._saveCb('hiddenToVisible1', arguments);},
+            hiddenToVisible2: function() {this._saveCb('hiddenToVisible2', arguments);},
+            enterVisible1: function() {this._saveCb('enterVisible1', arguments);},
+            enterVisible2: function() {this._saveCb('enterVisible2', arguments);},
+            leaveVisible1: function() {this._saveCb('leaveVisible1', arguments);},
+            leaveVisible2: function() {this._saveCb('leaveVisible2', arguments);},
+            enterHidden1: function() {this._saveCb('enterHidden1', arguments);},
             _saveCb: function(name, args) {
                 this.cbData.push([name].concat(_.toArray(args)));
             },
@@ -96,7 +96,7 @@ $(document).ready(function(){
                 ['leaveVisible2', 'under your bed'],
                 ['visibleToHidden1', 'under your bed'],
                 ['visibleToHidden2', 'under your bed'],
-                ['enterHidden1', 'under your bed'],
+                ['enterHidden1', 'under your bed']
             ]);
         });
 
@@ -111,7 +111,7 @@ $(document).ready(function(){
             stateMachine.toState('hidden', 'in the box');
             equal(stateMachine.currentState, 'hidden');
             deepEqual(stateMachine.cbData, [
-                ['enterHidden1', 'in the box'],
+                ['enterHidden1', 'in the box']
             ]);
         });
 
@@ -137,7 +137,7 @@ $(document).ready(function(){
                 ['hiddenToVisible1', 'bla'],
                 ['hiddenToVisible2', 'bla'],
                 ['enterVisible1', 'bla'],
-                ['enterVisible2', 'bla'],
+                ['enterVisible2', 'bla']
             ]);
         });
 
@@ -156,7 +156,7 @@ $(document).ready(function(){
                     'hide': {enterState: 'hidden'},
                     'click .clickable': {enterState: 'hidden'},
                     'click .clickable2': {enterState: 'hidden', callbacks: ['visibleToHiddenCb']}
-                },
+                }
             },
             states: {
                 'hidden': {className: 'hiddenBehindTree'}

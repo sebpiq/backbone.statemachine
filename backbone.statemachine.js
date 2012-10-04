@@ -85,7 +85,7 @@ Backbone.StateMachine = (function(Backbone, _) {
         // Callback bound to all events. If no transition available, do nothing.
         // Otherwise, starts the transition.
         _onMachineEvent: function(event) {
-            var data, extraArgs, transitions = this._transitions;
+            var data, extraArgs, key, transitions = this._transitions;
             if (transitions.hasOwnProperty((key = this.currentState)) &&
                 transitions[key].hasOwnProperty(event)) {
                 data = transitions[key][event];
@@ -137,8 +137,7 @@ Backbone.StateMachine = (function(Backbone, _) {
                     this.transition(leaveState, event, transitions[leaveState][event]);
                 }
             }
-            if (!(transitions.hasOwnProperty(INIT_STATE)
-                || transitions.hasOwnProperty(ANY_STATE))) {
+            if (!(transitions.hasOwnProperty(INIT_STATE) || transitions.hasOwnProperty(ANY_STATE)) && typeof console !== 'undefined') {
                 console.warn('there is no transition from state "init" to another state.');
             }
         },
@@ -188,7 +187,7 @@ Backbone.StateMachine = (function(Backbone, _) {
 
     return StateMachine;
 
-})(Backbone, _);
+}(Backbone, _));
 
 
 // A Backbone view that is also a state machine.
@@ -253,7 +252,7 @@ Backbone.StatefulView = (function(Backbone, _){
     StatefulView.extend = Backbone.View.extend;
 
     return StatefulView;
-})(Backbone, _);
+}(Backbone, _));
 
 
 // State machine debugger (ugh :-S).
@@ -269,10 +268,10 @@ Backbone.StatefulView = (function(Backbone, _){
             // This is only called when rendering the first time.
             if (!this.rendered) {
                 // sets-up periodic rendering, so the debug view is always up-to-date.
-                function periodicRender() {
+                var periodicRender = function() {
                     this.render();
                     setTimeout(_.bind(periodicRender, this), 100);
-                }
+                };
                 setTimeout(_.bind(periodicRender, this), 100);
                 this.rendered = true;
                 // sets-up the debug view's html
@@ -354,4 +353,4 @@ Backbone.StatefulView = (function(Backbone, _){
         el: undefined,
         collapsed: false
     });
-})(Backbone, _);
+}(Backbone, _));
