@@ -33,14 +33,13 @@ module.exports = function(grunt) {
         },
         lint: {
             src: '*.js',
-            grunt: 'grunt.js',
             tests: 'tests/tests.js'
         },
         qunit: {
             index: ['tests/tests.html']
         },
         watch: {
-            files: ['<config:lint.files>', 'dependencies/**', 'tests/**'],
+            files: ['<config:lint.src.files>', 'dependencies/**', 'tests/**'],
             tasks: 'lint qunit'
         }
     });
