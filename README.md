@@ -219,7 +219,12 @@ Questions, contributions ?
 
 Any suggestion, comment, question - are welcome - contact me directly or open a ticket.
 
-Any bug report, feature request, ... open a ticket !
+Any bug report, feature request, ... open a ticket !  To run tests, either open `tests/tests.html` in a browser, or run them from NodeJS (requires [PhantomJS](http://phantomjs.org/)):
+
+```bash
+npm install -g grunt
+grunt
+```
 
 
 More infos about state machines
