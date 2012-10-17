@@ -55,8 +55,6 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 });
 ```
 
-
-
 **state options**
 
 - `enter` - array containing names of methods to call when entering the state _(Optional)_.
@@ -67,6 +65,8 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 - `enterState` - arrival state of the transition.
 - `callbacks` - array containing names of methods to call when transition is crossed _(Optional)_.
 - `triggers` - Backbone event to trigger when transition is crossed _(Optional)_.
+
+**Note** : This is not demonstrated here, but you can also define a transition from one state to itself.
 
 
 ### Triggering transitions ###########
