@@ -66,7 +66,7 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
 - `callbacks` - array containing names of methods to call when transition is crossed _(Optional)_.
 - `triggers` - Backbone event to trigger when transition is crossed _(Optional)_.
 
-**Note** : This is not demonstrated here, but you can also define a transition from one state to itself.
+**Note** : _This is not demonstrated here, but you can also define a transition from one state to itself._
 
 
 ### Triggering transitions ###########
