@@ -127,9 +127,7 @@ Backbone.StateMachine = (function(Backbone, _) {
         // Declares transitions from `this.transitions`, which is a hash :
         //  { leaveState: { event: data, ... }, ... }
         _bindTransitions: function() {
-            if (!this.transitions) {
-                return;
-            }
+            if (!this.transitions) return;
 
             var leaveState, event, transitions = this.transitions;
             for (leaveState in transitions) {
@@ -146,11 +144,11 @@ Backbone.StateMachine = (function(Backbone, _) {
         // { stateName: data, ... }
         // Also defines `init` state if not defined in the hash.
         _bindStates: function() {
-            if (!this.states.hasOwnProperty(INIT_STATE)) {
-                this.state(INIT_STATE, {});
-            }
             if (!this.states) {
                 return;
+            }
+            if (!this.states.hasOwnProperty(INIT_STATE)) {
+                this.state(INIT_STATE, {});
             }
 
             var name, states = this.states;
