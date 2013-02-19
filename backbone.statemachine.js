@@ -205,7 +205,7 @@ Backbone.StatefulView = (function(Backbone, _){
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
         toState: function(name) {
-            if (this.el) {
+            if (this.el && this.el.hasOwnProperty("className")) {
                 $(this.el).removeClass((this.stateClassName || ''));
                 this.stateClassName = (this._states[name].className || name);
                 $(this.el).addClass(this.stateClassName);
