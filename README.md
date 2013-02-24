@@ -41,13 +41,19 @@ _.extend(element, Backbone.StateMachine, Backbone.Events, {
     },
     transitions: {
         init: {
-            initialized: {enterState: 'visible'}
+            initialized: 'visible'                            // You can declare a transition like that
         },
         visible: {
-            hide: {enterState: 'hidden'}                      // All options see: 'transition options'
+            hide: {
+                enterState: 'hidden',                         // Or like this if you want to specify options
+                triggers: 'nowVisible'
+            }
         },
         hidden: {
-            show: {enterState: 'visible'}
+            show: {
+                enterState: 'visible',
+                triggers: 'nowHidden'
+            }
         }
     },
     doShow: function() { this.el.show(); },
@@ -237,6 +243,12 @@ http://upload.wikimedia.org/wikipedia/commons/c/cf/Finite_state_machine_example_
 
 Release History
 ================
+
+0.2.4
+------
+
+- Added StatefulModel
+- Added simplified syntax for transition declaration if only the `enterState` if specified
 
 0.2.3
 ------

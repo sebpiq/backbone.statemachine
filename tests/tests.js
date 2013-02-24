@@ -21,9 +21,7 @@ $(document).ready(function(){
                         triggers: 'showTime'
                     }
                 },
-                '*': {
-                    'panic': {enterState: 'panicking'}
-                }
+                '*': { 'panic': 'panicking' }
             },
             states: {
                 'visible': {enter: ['enterVisible1', 'enterVisible2'], leave: ['leaveVisible1', 'leaveVisible2']},
@@ -149,12 +147,12 @@ $(document).ready(function(){
         var TestStatefulView = Backbone.StatefulView.extend({
             transitions: {
                 'hidden': {
-                    'show': {enterState: 'visible'},
-                    'click .clickable': {enterState: 'visible'}
+                    'show': 'visible',
+                    'click .clickable': 'visible'
                 },
                 'visible': {
-                    'hide': {enterState: 'hidden'},
-                    'click .clickable': {enterState: 'hidden'},
+                    'hide': 'hidden',
+                    'click .clickable': 'hidden',
                     'click .clickable2': {enterState: 'hidden', callbacks: ['visibleToHiddenCb']}
                 }
             },
@@ -223,6 +221,26 @@ $(document).ready(function(){
 
             $('.clickable', statefulView.el).trigger('hide');
             equal(statefulView.currentState, 'hidden');
+        });
+
+    module('StatefulModel');
+
+        var TestStatefulModel = Backbone.StatefulModel.extend({
+            transitions: {
+                'init': {'initialized': {enterState: 'idle'}}
+            }
+        });
+        var statefulModel = new TestStatefulModel({attr1: 11, attr2: 22});
+
+        test('StatefulModel - instanceof', function () {
+            ok(statefulModel instanceof Backbone.Model);
+        });
+
+        test('StatefulModel - sanity test', function () {
+            ok(statefulModel.get('attr1'), 11);
+            ok(statefulModel.get('attr2'), 22);
+            ok(statefulModel.trigger('initialized'));
+            equal(statefulModel.currentState, 'idle');
         });
 
 });

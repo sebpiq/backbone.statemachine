@@ -40,7 +40,9 @@ Backbone.StateMachine = (function(Backbone, _) {
 
         // Declares a new transition on the state machine.
         transition: function(leaveState, event, data) {
-            data = _.clone(data);
+            // If `data` is a string, it is the destination state of the transition
+            if (_.isString(data)) data = {enterState: data};
+            else data = _.clone(data);
             if (leaveState !== ANY_STATE && !this._states.hasOwnProperty(leaveState)) {
                 this.state(leaveState, {});
             }
@@ -181,9 +183,29 @@ Backbone.StateMachine = (function(Backbone, _) {
         }
     };
 
-    StateMachine.version = '0.2.2';
+    StateMachine.version = '0.2.3';
 
     return StateMachine;
+
+}(Backbone, _));
+
+
+// A Backbone model that is also a state machine.
+Backbone.StatefulModel = (function(Backbone, _) {
+
+    var StatefulModel = function(options) {
+        this.startStateMachine(options);
+        Backbone.Model.prototype.constructor.apply(this, arguments);
+    }
+    // Fix instanceof for StatefulModel
+    var sfmProto = StatefulModel.prototype = new Backbone.Model();
+    delete sfmProto.cid;
+    delete sfmProto.attributes;
+    delete sfmProto.changed;
+
+    _.extend(StatefulModel.prototype, Backbone.Model.prototype, Backbone.StateMachine);
+    StatefulModel.extend = Backbone.Model.extend;
+    return StatefulModel;
 
 }(Backbone, _));
 
@@ -205,7 +227,7 @@ Backbone.StatefulView = (function(Backbone, _){
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
         toState: function(name) {
-            if (this.el && this.el.hasOwnProperty("className")) {
+            if (this.el && (this.el instanceof HTMLElement)) {
                 $(this.el).removeClass((this.stateClassName || ''));
                 this.stateClassName = (this._states[name].className || name);
                 $(this.el).addClass(this.stateClassName);
