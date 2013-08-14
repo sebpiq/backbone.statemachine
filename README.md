@@ -36,16 +36,16 @@ var element = {el: $('#myElement')}
 // !!! note that `StateMachine` requires the `Events` mixin
 _.extend(element, Backbone.StateMachine, Backbone.Events, {
   states: {
-    visible: {enter: ['doShow'], leave: ['doHide']},      // All options see: 'state options'
-    hidden: {}                                            // Declaring this is optional
+    visible: {enter: ['doShow'], leave: ['doHide']}, // All options see: 'state options'
+    hidden: {}                                       // Declaring an emtpy state is optional
   },
   transitions: {
     init: {
-      initialized: 'visible'                            // You can declare a transition like that
+      initialized: 'visible'            // You can declare a transition like that
     },
     visible: {
       hide: {
-        enterState: 'hidden',                         // Or like this if you want to specify options
+        enterState: 'hidden',           // Or like this if you want to specify options
         triggers: 'nowVisible'
       }
     },
@@ -191,12 +191,15 @@ This makes styling very easy, for example :
 
 It is possible to declare transition events exactly the same way as in the `Backbone.View.events` hash. For example :
 
+**Note** : _You don't need to call `startStateMachine` when using a `StatefulView`._
+
 ```javascript
 
 var MyView = Backbone.StatefulView.extend({
   transitions: {
     'init': {'loaded': 'idle'}
-    'idle': {'click .activate': 'active'}   // transition will occur when clicking on '.activate'
+    // transition will occur when clicking on '.activate'
+    'idle': {'click .activate': 'active'}
   }
 })
 ```
