@@ -31,34 +31,34 @@ Also, in order to actually show or hide the element, everytime the state machine
 
 ```javascript
 
-var element = {el: $('#myElement')};
+var element = {el: $('#myElement')}
 
 // !!! note that `StateMachine` requires the `Events` mixin
 _.extend(element, Backbone.StateMachine, Backbone.Events, {
-    states: {
-        visible: {enter: ['doShow'], leave: ['doHide']},      // All options see: 'state options'
-        hidden: {}                                            // Declaring this is optional
+  states: {
+    visible: {enter: ['doShow'], leave: ['doHide']},      // All options see: 'state options'
+    hidden: {}                                            // Declaring this is optional
+  },
+  transitions: {
+    init: {
+      initialized: 'visible'                            // You can declare a transition like that
     },
-    transitions: {
-        init: {
-            initialized: 'visible'                            // You can declare a transition like that
-        },
-        visible: {
-            hide: {
-                enterState: 'hidden',                         // Or like this if you want to specify options
-                triggers: 'nowVisible'
-            }
-        },
-        hidden: {
-            show: {
-                enterState: 'visible',
-                triggers: 'nowHidden'
-            }
-        }
+    visible: {
+      hide: {
+        enterState: 'hidden',                         // Or like this if you want to specify options
+        triggers: 'nowVisible'
+      }
     },
-    doShow: function() { this.el.show(); },
-    doHide: function() { this.el.hide(); }
-});
+    hidden: {
+      show: {
+        enterState: 'visible',
+        triggers: 'nowHidden'
+      }
+    }
+  },
+  doShow: function() { this.el.show() },
+  doHide: function() { this.el.hide() }
+})
 ```
 
 **state options**
@@ -82,16 +82,16 @@ The state machines are always created in `init` state, even if it isn't declared
 ```javascript
 
 // !!! this method needs to be called before the state machine can be used
-element.startStateMachine();
+element.startStateMachine()
 
 // First, let's get the machine out from 'init' state
-element.trigger('initialized');
+element.trigger('initialized')
 
-element.currentState;                // 'visible'
-element.trigger('hide');             // a transition is triggered, the element should disappear
-element.currentState;                // 'hidden'
-element.trigger('hide');             // event 'hide' while in state 'hidden' -> no transition
-element.trigger('show', 'quick');    // extra arguments will be passed to the callbacks
+element.currentState                // 'visible'
+element.trigger('hide')             // a transition is triggered, the element should disappear
+element.currentState                // 'hidden'
+element.trigger('hide')             // event 'hide' while in state 'hidden' -> no transition
+element.trigger('show', 'quick')    // extra arguments will be passed to the callbacks
 ```
 
 
@@ -102,17 +102,17 @@ Every time a transition is crossed, the state machine triggers a bunch of Backbo
 ```javascript
 
 element.bind('transition', function(leaveState, enterState) {
-    alert('Transition from state "'+leaveState+'" to state "'+enterState+'"');
-});
+  alert('Transition from state "'+leaveState+'" to state "'+enterState+'"')
+})
 element.bind('leaveState:hidden', function() {
-    // synchronize other objects in your application
-    bla.trigger('activate');
-    aView.render();
-});
+  // synchronize other objects in your application
+  bla.trigger('activate')
+  aView.render()
+})
 element.bind('enterState:hidden', function() {
-    // synchronize other objects in your application
-    bla.trigger('deactivate');
-});
+  // synchronize other objects in your application
+  bla.trigger('deactivate')
+})
 ```
 
 Also, if your transition defines the `triggers` option, for example `{triggers: 'showItAll'}`, an extra event *'showItAll'* will be triggered when that transition is crossed :
@@ -120,18 +120,18 @@ Also, if your transition defines the `triggers` option, for example `{triggers: 
 ```javascript
 
 element.bind('showItAll', function() {
-    // do stuff
-});
+  // do stuff
+})
 ```
 
 If you want to hush-up the state machine, and prevent any of those events to be triggered, just set `silent` to `true` :
 
 ```javascript
 
-element.silent = true;      // next transitions will happen in silence
-element.trigger('show');
-element.trigger('hide');
-element.silent = false;     // next transitions will trigger events as described above
+element.silent = true      // next transitions will happen in silence
+element.trigger('show')
+element.trigger('hide')
+element.silent = false     // next transitions will trigger events as described above
 ```
 
 
@@ -141,15 +141,15 @@ When declaring the transitions of your state machine, you can use the wildcard c
 
 ```javascript
 
-var obj = {};
+var obj = {}
 _.extend(obj, Backbone.StateMachine, Backbone.Events, {
-    transitions: {
-        visible: { hide: {enterState: 'hidden'} },
-        hidden: { show: {enterState: 'visible'} },
-        // No matter the machine's state, 'panic' will always trigger a transition :
-        '*': { panic: {enterState: 'panicking'} }
-    }
-});
+  transitions: {
+    visible: { hide: 'hidden' },
+    hidden: { show: 'visible' },
+    // No matter the machine's state, 'panic' will always trigger a transition :
+    '*': { panic: 'panicking' }
+  }
+})
 ```
 
 
@@ -158,9 +158,9 @@ _.extend(obj, Backbone.StateMachine, Backbone.Events, {
 You can use the method `toState` to force the machine to a particular state. In that case, no transition will occur, but the `enter` callbacks will be executed.
 
 ```javascript
-element.currentState;       // 'hidden'
-element.toState('visible'); // the callback 'doShow' is executed.
-element.currentState;       // 'visible'
+element.currentState       // 'hidden'
+element.toState('visible') // the callback 'doShow' is executed.
+element.currentState       // 'visible'
 ```
 
 
@@ -179,10 +179,10 @@ This makes styling very easy, for example :
 ```css
 
 #myStatefulView.visible {
-    display: block;
+  display: block;
 }
 #myStatefulView.hidden {
-    display: none;
+  display: none;
 }
 ```
 
@@ -194,16 +194,11 @@ It is possible to declare transition events exactly the same way as in the `Back
 ```javascript
 
 var MyView = Backbone.StatefulView.extend({
-    transitions: {
-        'idle': {
-            'click .activate': {enterState: 'active'}   // transition will occur when clicking on '.activate'
-        }
-    },
-
-    initialize: function(opts) {
-        this.toState('idle');                           // you need to set manually the initial state
-    }
-});
+  transitions: {
+    'init': {'loaded': 'idle'}
+    'idle': {'click .activate': 'active'}   // transition will occur when clicking on '.activate'
+  }
+})
 ```
 
 
@@ -243,6 +238,11 @@ http://upload.wikimedia.org/wikipedia/commons/c/cf/Finite_state_machine_example_
 
 Release History
 ================
+
+0.2.5
+------
+
+- Callbacks can also be anonymous functions
 
 0.2.4
 ------
