@@ -164,9 +164,15 @@ Backbone.StateMachine = (function(Backbone, _) {
             var methods = [], i, length, method;
 
             for (i = 0, length = methodNames.length; i < length; i++){
-                method = this[methodNames[i]];
-                if (!method) {
-                    throw new Error('Method "' + methodNames[i] + '" does not exist');
+                // first, check if this is an anonymous function
+                if(_.isFunction(methodNames[i])) {
+                    method = methodNames[i];
+                } else {
+                    // else, get the function from the View
+                    method = this[methodNames[i]];
+                    if (!method) {
+                        throw new Error('Method "' + methodNames[i] + '" does not exist');
+                    }
                 }
                 methods.push(method);
             }
