@@ -246,11 +246,13 @@ Release History
 ------
 
 - Callbacks can also be anonymous functions
+- Switched to 2-spaces indentation and removed semicolons
+- Now throws an error if `startStateMachine` is called twice
 
 0.2.4
 ------
 
-- Added StatefulModel
+- Added `StatefulModel`
 - Added simplified syntax for transition declaration if only the `enterState` if specified
 
 0.2.3
