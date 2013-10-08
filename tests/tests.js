@@ -143,6 +143,26 @@ module('StateMachine')
     ])
   })
 
+  test('StateMachine - enter callback can trigger other transitions', function () {
+    var stateMachine = _.extend({}, Backbone.StateMachine, Backbone.Events, {
+      transitions: {
+        'init': { 'show': 'visible' },
+        'visible': { 'hide': 'hidden' }
+      },
+      states: { 'visible': {enter: ['hideNow']} },
+      hideNow: function() { this.trigger('hide') }
+    })
+    var allTransitions = []
+    stateMachine.startStateMachine()
+
+    stateMachine.on('transition', function(leave, enter) {
+      allTransitions.push([leave, enter])
+    })
+    stateMachine.trigger('show')
+    deepEqual(allTransitions, [['init', 'visible'], ['visible', 'hidden']])
+
+  })
+
   var eventSender = {}
   _.extend(eventSender, Backbone.Events)
 
