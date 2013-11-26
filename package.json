@@ -1,0 +1,30 @@
+{
+    "name"        : "backbone.statemachine",
+    "version"     : "0.2.5",
+    "description" : "Simple finite-state machine for Backbone. View states made easy. Synchronizing your application's parts with events made easy.",
+    "main"        : "backbone.statemachine.js",
+    "directories" : {
+        "example" : "examples",
+        "test"    : "tests"
+    },
+    "scripts"     : {
+        "test" : "grunt"
+    },
+    "repository"  : {
+        "type" : "git",
+        "url"  : "https://github.com/sebpiq/backbone.statemachine.git"
+    },
+    "keywords"    : [
+        "backbone",
+        "statemachine"
+    ],
+    "author"      : {
+        "name"  : "Sebastien Piquemal",
+        "email" : "sebpiq@gmail.com",
+        "web"   : "http://funktion.fm"
+    },
+    "license"     : "MIT",
+    "bugs"        : {
+        "url" : "https://github.com/sebpiq/backbone.statemachine/issues"
+    }
+}
