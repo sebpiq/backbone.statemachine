@@ -387,5 +387,5 @@
         collapsed: false
       })
     }(Backbone, _))
-}))();
+}));
 
