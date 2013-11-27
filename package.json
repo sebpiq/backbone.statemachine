@@ -1,6 +1,6 @@
 {
     "name"        : "backbone.statemachine",
-    "version"     : "0.2.5",
+    "version"     : "0.2.6",
     "description" : "Simple finite-state machine for Backbone. View states made easy. Synchronizing your application's parts with events made easy.",
     "main"        : "backbone.statemachine.js",
     "directories" : {

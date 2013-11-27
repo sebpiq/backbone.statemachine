@@ -242,6 +242,11 @@ http://upload.wikimedia.org/wikipedia/commons/c/cf/Finite_state_machine_example_
 Release History
 ================
 
+0.2.6
+------
+
+- Repackaged for browserify and AMD, and available through npm
+
 0.2.5
 ------
 

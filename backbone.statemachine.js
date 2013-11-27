@@ -43,8 +43,6 @@
     // Note that this requires to be mixed-in with Backbone.Event as well.
     var StateMachine = Backbone.StateMachine = {
 
-      version: '0.2.5',
-
       currentState: undefined,
 
       // If `silent` is true, the state machine doesn't send events during a transition.
