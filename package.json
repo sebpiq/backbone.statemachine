@@ -23,6 +23,14 @@
         "email" : "sebpiq@gmail.com",
         "web"   : "http://funktion.fm"
     },
+    "dependencies": {
+        "underscore": "1.5.x",
+        "backbone": "1.1.x"
+    },
+    "devDependencies": {
+        "grunt": "0.4.x",
+        "grunt-contrib-qunit": "0.3.x"
+    },
     "license"     : "MIT",
     "bugs"        : {
         "url" : "https://github.com/sebpiq/backbone.statemachine/issues"
