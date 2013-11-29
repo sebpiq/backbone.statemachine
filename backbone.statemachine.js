@@ -30,6 +30,7 @@
 } (typeof global === "object" ? global : this, 
 
   function (Backbone, _) {
+    var $ = Backbone.$
 
     // This is a key that means 'any state'.
     var ANY_STATE = '*'
