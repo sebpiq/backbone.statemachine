@@ -235,12 +235,20 @@
       this.startStateMachine(options)
       Backbone.View.prototype.constructor.apply(this, arguments)
     }
-    // Fix instanceof for StatefulView
-    var sfvProto = StatefulView.prototype = new Backbone.View()
-    delete sfvProto.cid
-    delete sfvProto.options
-    delete sfvProto.el
-    delete sfvProto.$el
+
+    // If no jquery, we cannot create views
+    if (!Backbone.$) {
+      StatefulView = Backbone.StatefulView = function(options) {
+        throw new Error('Backbone.View is not available')
+      }
+    } else {
+      // Fix instanceof for StatefulView
+      var sfvProto = StatefulView.prototype = new Backbone.View()
+      delete sfvProto.cid
+      delete sfvProto.options
+      delete sfvProto.el
+      delete sfvProto.$el
+    }
 
     _.extend(StatefulView.prototype, Backbone.View.prototype, Backbone.StateMachine, {
 
