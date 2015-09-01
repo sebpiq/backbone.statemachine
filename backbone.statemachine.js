@@ -2,7 +2,7 @@
  * backbone.statemachine
  * https://github.com/sebpiq/backbone.statemachine
  *
- * Copyright (c) 2012-2013 Sébastien Piquemal.
+ * Copyright (c) 2012-2015 Sébastien Piquemal.
  * Licensed under the MIT license.
  */
 
